@@ -1,6 +1,6 @@
 import sys
 sys.path.append('E:\GitHub\AlphaZero_Gomoku')
-from flask import Flask, render_template, redirect
+from flask import Flask, render_template, redirect, request, send_from_directory
 from game import Board, Game
 from mcts_alphaZero import MCTSPlayer
 from policy_value_net_numpy import PolicyValueNetNumpy
@@ -65,6 +65,15 @@ def move(i, j):
     print(board.availables)
     print(move)
     board.do_move(move)
+
+    # check if the game has ended
+    end, winner = board.game_end()
+    if end:
+        board = Board() # reset board
+        board.init_board(1)
+        mcts_player.reset_player()
+        return redirect("/", code=302)
+
     move = mcts_player.get_action(board)
     board.do_move(move)
     end, winner = board.game_end()
@@ -73,6 +82,10 @@ def move(i, j):
         board.init_board(1)
         mcts_player.reset_player()
     return redirect("/", code=302)
+
+@app.route('/<path:path>')
+def send_files(path):
+    return send_from_directory('static', path)
 
 
 
