@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %} Home {% endblock %}
+{% block heading %}Gomoku Tutor{% endblock %}
+
+{% block content%}
+    
+<table style = "border: 1px solid black;">
+    <button type="button">Start game</button> <!-- link button -->
+    <button type="button">End game</button> <!-- link button -->
+    <button type="button">Hint</button> <!-- link button -->
+    <button type="button">Start AI analysis</button> <!-- link button -->
+    {%for i in range(0, width)%}
+    <tr>
+        {%for j in range(0, height)%}
+            <td style = "width: 25px; height: 25px;">
+                {% if state[i][j] == "-" %}
+                    <a href = "move/{{i}}/{{j}}">{{state[i][j]}}</a>
+                {% else %}
+                    {{state[i][j]}}
+                {% endif %}
+            </td>
+        {%endfor%}
+    </tr>
+    {%endfor%}
+</table>
+{% endblock %}
