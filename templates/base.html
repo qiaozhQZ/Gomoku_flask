@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+  <head>
+    {% block head %}
+    <link rel="stylesheet" href="style.css" type="text/css">
+    <title>{% block title %}Gomoku{% endblock %}</title>
+    {% endblock %}
+  </head>
+  <body>
+    <div id="heading">
+        <h1>{% block heading %}{% endblock %}</h1>
+    </div>
+    <div id="nav">
+        {% block nav %}
+        <ul style="list-style-type: none;float: right;font-size: large;">
+            <li style="display:inline"><a href="/">Home</a></li>
+            <li style="display:inline"><a href="/about">About</a></li>
+        </ul>
+        {% endblock %}
+    </div>
+    <div id="content">{% block content %}{% endblock %}</div>
+    <div id="footer">
+      {% block footer %}
+      {% endblock %}
+    </div>
+  </body>
+</html>
