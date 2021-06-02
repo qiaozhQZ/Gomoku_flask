@@ -38,12 +38,17 @@ mcts_player = MCTSPlayer(best_policy.policy_value_fn,
                             c_puct=5,
                             n_playout=400)
 mcts_player.set_player_ind(2)
+mcts_human_hint = MCTSPlayer(best_policy.policy_value_fn,
+                            c_puct=5,
+                            n_playout=400)
+mcts_human_hint.set_player_ind(1)
 
 print("I'm ready.")
 
 @app.route('/')
 def get_board():
-
+    score = request.args.get('score')
+    print("SCORE", score)
     width = board.width
     height = board.height
 
@@ -70,12 +75,16 @@ def get_board():
                 # return_value += '_'.center(8)
                 state[-1].append('-')
         # return_value += '\r\n\r\n'
-    return render_template('home.html', state = state, size = len(state), width = width, height = height)
+    return render_template('home.html', state = state, size = len(state), width = width, height = height, score = score)
 
 @app.route('/move/<i>/<j>')
 def move(i, j):
     global board
+    _, move_probs = mcts_human_hint.get_action(board, return_prob = True)
+    print(move_probs)
+
     move = (board.height - int(i) - 1) * board.width + int(j)
+    score = move_probs[move]
     print(board.availables)
     print(move)
     board.do_move(move)
@@ -95,7 +104,33 @@ def move(i, j):
         board = Board() # reset board
         board.init_board(1)
         mcts_player.reset_player()
-    return redirect("/", code=302)
+    return redirect("/?score={}".format(score), code=302)
+
+@app.route('/hint')
+def hint():
+    global board
+    move, move_probs = mcts_human_hint.get_action(board, return_prob = True)
+    score = move_probs[move]
+    print(board.availables)
+    print(move)
+    board.do_move(move)
+
+    # check if the game has ended
+    end, winner = board.game_end()
+    if end:
+        board = Board() # reset board
+        board.init_board(1)
+        mcts_player.reset_player()
+        return redirect("/", code=302)
+
+    move = mcts_player.get_action(board)
+    board.do_move(move)
+    end, winner = board.game_end()
+    if end:
+        board = Board() # reset board
+        board.init_board(1)
+        mcts_player.reset_player()
+    return redirect("/?score={}".format(score), code=302)
 
 @app.route('/<path:path>')
 def send_files(path):
