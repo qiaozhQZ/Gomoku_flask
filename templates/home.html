@@ -6,10 +6,9 @@
 {% block content%}
     
 <table style = "border: 1px solid black;">
-    <button type="button">Start game</button> <!-- link button -->
-    <button type="button">End game</button> <!-- link button -->
-    <button type="button">Hint</button> <!-- link button -->
-    <button type="button">Start AI analysis</button> <!-- link button -->
+    <button type="button">Start new game</button> <!--start a new game any time -->
+    <a href="/hint">Hint</a> <!-- see the next optimal move -->
+    <div>Score:{{score}}</div> <!-- predict win based on the current move -->
     {%for i in range(0, width)%}
     <tr>
         {%for j in range(0, height)%}
