@@ -7,17 +7,27 @@ from flask import redirect
 from flask import request
 from flask import send_from_directory
 
+from models import db
+
 sys.path.append('../AlphaZero_Gomoku')
 
 from game import Board  # noqa: E402
 from mcts_alphaZero import MCTSPlayer  # noqa: E402
 from policy_value_net_numpy import PolicyValueNetNumpy  # noqa: E402
 
+# Setup the Flask app with the database
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+db.init_app(app)
+
+# Create the database if it does not exist.
+with app.app_context():
+    db.create_all()
+
+# Setup the board and MCTS player
 board = Board()
 board.init_board(1)
 
-# Setup MCTS player
 n = 5
 width, height = 8, 8
 model_file = '../AlphaZero_Gomoku/best_policy_8_8_5.model'
