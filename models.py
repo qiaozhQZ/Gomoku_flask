@@ -11,8 +11,7 @@ class Player(db.Model):
     games = db.relationship('Game', backref='player', lazy=True)
 
     def __repr__(self):
-        return '<Player: {} (is_white={})>'.format(self.username,
-                                                   self.is_white)
+        return '<Player: {}>'.format(self.username)
 
 
 class Game(db.Model):
@@ -41,15 +40,16 @@ class Move(db.Model):
     score = db.Column(db.Float, nullable=True)
     hint_location = db.Column(db.Integer, nullable=True)
     raw_move_scores = db.Column(db.Text, nullable=True)
+    is_hint = db.Column(db.Boolean, nullable=True)
 
     # Note sure we need this
     # move_number = db.Column(db.int, nullable=False)
 
     def __repr__(self):
         white = False
-        if self.player_move and self.player.game.player.is_white:
+        if self.player_move and self.game.player_is_white:
             white = True
-        if not self.player_move and not self.player.game.player.is_white:
+        if not self.player_move and not self.game.player_is_white:
             white = True
         return '<Move: {} (game={}, player={}, white={})>'.format(
             self.id, self.game_id, self.player_move, white)
