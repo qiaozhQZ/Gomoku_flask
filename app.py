@@ -24,7 +24,7 @@ from policy_value_net_numpy import PolicyValueNetNumpy  # noqa: E402
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 db.init_app(app)
-app.secret_key = b'asdf0daf09dasd902j323jkh32jhkd0sdjlksdljn1n120919030923'
+app.secret_key = b'asrdf0daf09dasd902j323jkh32jhkd0sdjlksdljn1n120919030923' # change the key to clear cookies
 
 
 # Create the database if it does not exist.
@@ -39,6 +39,7 @@ def build_board_and_players():
 
     width, height = 8, 8
     model_file = '../AlphaZero_Gomoku/best_policy_8_8_5.model'
+
     try:
         policy_param = pickle.load(open(model_file, 'rb'))
     except Exception:
@@ -64,7 +65,7 @@ def about():
 
 
 def get_player_game():
-    if 'player_id' not in session:
+    if 'player_id' not in session or Player.query.filter_by(id=session['player_id']).first() is None:
         username = str(uuid.uuid1())
         # username = str(hash(request.remote_addr))
         player = Player(username=username)
