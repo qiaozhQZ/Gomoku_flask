@@ -1,14 +1,22 @@
 import datetime
 
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy_utils.types.choice import ChoiceType
 
 db = SQLAlchemy()
 
 
 class Player(db.Model):
+    CONDITIONS = [
+        ('no feedback', 'No Feedback'),
+        ('immediate feedback', 'Immediate Feedback'),
+        ('delayed feedback', 'Delayed Feedback')
+    ]
+
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     games = db.relationship('Game', backref='player', lazy=True)
+    condition = db.Column(ChoiceType(CONDITIONS))
 
     def __repr__(self):
         return '<Player: {}>'.format(self.username)

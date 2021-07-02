@@ -24,7 +24,7 @@ from policy_value_net_numpy import PolicyValueNetNumpy  # noqa: E402
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 db.init_app(app)
-app.secret_key = b'asdf0daf09dasd902j323jkh32jhkd0sdjlksdljn1n120919030923'
+app.secret_key = b'asdf0daf09dasd902j323jkzh32jhkd0sdjlksdljn1n120919030923'
 
 
 # Create the database if it does not exist.
@@ -57,6 +57,43 @@ games = {}
 # board, mcts_player, mcts_human_hint = build_board_and_players()
 
 
+@app.route('/')
+def training():
+    global games
+
+    print(session)
+    print(games)
+
+    player, game = get_player_game()
+
+    print(game.moves)
+
+    if game.id not in games:
+        games[game.id] = build_board_and_players()
+
+    score = request.args.get('score')
+    width = games[game.id][0].width
+    height = games[game.id][0].height
+
+    # board_state
+    state = []
+
+    for i in range(height - 1, -1, -1):
+        state.append([])
+        for j in range(width):
+            loc = i * width + j
+            p = games[game.id][0].states.get(loc, -1)
+            if p == 1:
+                state[-1].append('white')
+            elif p == 2:
+                state[-1].append('black')
+            else:
+                state[-1].append('-')
+
+    return render_template('training.html', state=state, size=len(state),
+                           width=width, height=height, score=score)
+
+
 @app.route("/about")
 def about():
     """View function for About Page."""
@@ -67,7 +104,7 @@ def get_player_game():
     if 'player_id' not in session:
         username = str(uuid.uuid1())
         # username = str(hash(request.remote_addr))
-        player = Player(username=username)
+        player = Player(username=username, condition='immediate feedback')
         db.session.add(player)
         db.session.commit()
         session['player_id'] = player.id
@@ -87,7 +124,10 @@ def get_player_game():
     return player, game
 
 
-@app.route('/')
+
+
+
+@app.route('/old')
 def get_board():
     global games
 
