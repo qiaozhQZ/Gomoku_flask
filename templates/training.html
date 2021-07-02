@@ -6,8 +6,8 @@
 {% block content%}
 
 <div class="toolbar">
-        {% if score %}
-	<div class='score'><h3>Last Move Score: {{score}}</h3></div>
+        {% if score is not none %}
+	<div class='score'><h3>Last Move Score: {{ '%0.1f' | format(score|float)}}</h3></div>
 	<div class='comment'>A measure (ranging from 0-1) of how optimal your last move was
 		(1=best).</div>
 	{% endif %}
@@ -15,9 +15,9 @@
 </div>
 
 <table class="board">
-    {%for i in range(0, width)%}
+    {%for i in range(0, size)%}
     <tr>
-        {%for j in range(0, height)%}
+        {%for j in range(0, size)%}
             <td>
                 {% if state[i][j] == "-" %}
                     <a href = "move/{{i}}/{{j}}"></a>

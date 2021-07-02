@@ -23,12 +23,14 @@ class Player(db.Model):
 
 
 class Game(db.Model):
+
     id = db.Column(db.Integer, primary_key=True)
     player_id = db.Column(db.Integer, db.ForeignKey('player.id'),
                           nullable=False)
     player_is_white = db.Column(db.Boolean, nullable=False)
     player_won = db.Column(db.Boolean, nullable=True)
     training_game = db.Column(db.Boolean, nullable=False)
+    size = db.Column(db.Integer, default=8)
     moves = db.relationship('Move', backref='game', lazy=True)
 
     # do not need the opponent column until we have multiple opponents
@@ -59,5 +61,5 @@ class Move(db.Model):
             white = True
         if not self.player_move and not self.game.player_is_white:
             white = True
-        return '<Move: {} (game={}, player={}, white={})>'.format(
-            self.id, self.game_id, self.player_move, white)
+        return '<Move: {} (game={}, player={}, white={}, loc={}, score={})>'.format(
+            self.id, self.game_id, self.player_move, white, self.location, self.score)

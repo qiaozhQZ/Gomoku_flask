@@ -26,7 +26,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 db.init_app(app)
 
 # change the key to clear cookies
-app.secret_key = b'asrdf0daf09dasd902j323jkh32jhkd0sdjlksdljn1n120919030923'
+app.secret_key = b'azsrdf0zdaf09dasd902j323jkh32jhkd0sdjlksdljn1n120919030923'
 
 
 # Create the database if it does not exist.
@@ -34,77 +34,9 @@ with app.app_context():
     db.create_all()
 
 
-def build_board_and_players():
-    # Setup the board and MCTS player
-    board = Board()
-    board.init_board(1)
-
-    width, height = 8, 8
-    model_file = '../AlphaZero_Gomoku/best_policy_8_8_5.model'
-
-    try:
-        policy_param = pickle.load(open(model_file, 'rb'))
-    except Exception:
-        policy_param = pickle.load(open(model_file, 'rb'), encoding='bytes')
-    best_policy = PolicyValueNetNumpy(width, height, policy_param)
-    mcts_player = MCTSPlayer(best_policy.policy_value_fn, c_puct=5,
-                             n_playout=400)
-    mcts_player.set_player_ind(2)
-    mcts_human_hint = MCTSPlayer(best_policy.policy_value_fn, c_puct=5,
-                                 n_playout=400)
-    mcts_human_hint.set_player_ind(1)
-    return board, mcts_player, mcts_human_hint
-
-
-games = {}
-# board, mcts_player, mcts_human_hint = build_board_and_players()
-
-
-@app.route('/')
-def training():
-    global games
-
-    print(session)
-    print(games)
-
-    player, game = get_player_game()
-
-    print(game.moves)
-
-    if game.id not in games:
-        games[game.id] = build_board_and_players()
-
-    score = request.args.get('score')
-    width = games[game.id][0].width
-    height = games[game.id][0].height
-
-    # board_state
-    state = []
-
-    for i in range(height - 1, -1, -1):
-        state.append([])
-        for j in range(width):
-            loc = i * width + j
-            p = games[game.id][0].states.get(loc, -1)
-            if p == 1:
-                state[-1].append('white')
-            elif p == 2:
-                state[-1].append('black')
-            else:
-                state[-1].append('-')
-
-    return render_template('training.html', state=state, size=len(state),
-                           width=width, height=height, score=score)
-
-
-@app.route("/about")
-def about():
-    """View function for About Page."""
-    return render_template("about.html")
-
-
-def get_player_game():
-    if 'player_id' not in session or Player.query.filter_by(id=session['player_id']).first() is None:
+def get_player():
+    if ('player_id' not in session or
+            Player.query.filter_by(id=session['player_id']).first() is None):
         username = str(uuid.uuid1())
         # username = str(hash(request.remote_addr))
         player = Player(username=username, condition='immediate feedback')
@@ -113,71 +45,101 @@ def get_player_game():
         session['player_id'] = player.id
     else:
         player = Player.query.filter_by(id=session['player_id']).first()
-        print('PLAYER', player)
+    return player
 
-    global games
-    if 'game_id' not in session or session['game_id'] not in games:
-        game = Game(player=player, player_is_white=True, training_game=True)
+
+def get_game(player):
+    if ('game_id' not in session or
+            Game.query.filter_by(id=session['game_id']).first() is None):
+        game = Game(player=player, player_is_white=False, training_game=True)
         db.session.add(game)
         db.session.commit()
         session['game_id'] = game.id
     else:
         game = Game.query.filter_by(id=session['game_id']).first()
-
-    return player, game
-
+    return game
 
 
+def get_board(game):
+    board = Board()
+    board.init_board(0)
+
+    for move in game.moves:
+        board.do_move(move.location)
+
+    return board
 
 
-@app.route('/old')
-def get_board():
-    global games
+def get_mcts_player(player_index=1):
+    """
+    Get an mcts player, an index of 1 corresponds to first player (typically
+    human) and an index of 2 corresponds to the second player (typically AI
+    opponent).
+    """
+    board = Board()
+    board.init_board()
 
-    print(session)
-    print(games)
+    size = 8
+    model_file = '../AlphaZero_Gomoku/best_policy_8_8_5.model'
 
-    player, game = get_player_game()
+    try:
+        policy_param = pickle.load(open(model_file, 'rb'))
+    except Exception:
+        policy_param = pickle.load(open(model_file, 'rb'), encoding='bytes')
 
-    print(game.moves)
+    best_policy = PolicyValueNetNumpy(size, size, policy_param)
+    mcts_player = MCTSPlayer(best_policy.policy_value_fn, c_puct=5,
+                             n_playout=200)
+    mcts_player.set_player_ind(player_index)
 
-    if game.id not in games:
-        games[game.id] = build_board_and_players()
+    return mcts_player
 
-    score = request.args.get('score')
-    width = games[game.id][0].width
-    height = games[game.id][0].height
 
-    # board_state
+@app.route('/')
+def training():
+    player = get_player()
+    game = get_game(player)
+    moves = {move.location: "black" if
+             (move.player_move and not game.player_is_white) or
+             (not move.player_move and game.player_is_white)
+             else "white" for move in game.moves}
+
+    for move in game.moves:
+        print(move)
+
+    score = None
+    if len(game.moves) > 1:
+        score = game.moves[-2].score
+        print("MY SCORE", score)
+
     state = []
-
-    for i in range(height - 1, -1, -1):
+    for i in range(game.size - 1, -1, -1):
         state.append([])
-        for j in range(width):
-            loc = i * width + j
-            p = games[game.id][0].states.get(loc, -1)
-            if p == 1:
-                state[-1].append('X')
-            elif p == 2:
-                state[-1].append('O')
+        for j in range(game.size):
+            loc = i * game.size + j
+            if loc in moves:
+                state[-1].append(moves[loc])
             else:
                 state[-1].append('-')
 
-    return render_template('home.html', state=state, size=len(state),
-                           width=width, height=height, score=score)
+    return render_template('training.html', state=state, size=game.size,
+                           score=score)
+
+
+@app.route("/about")
+def about():
+    """View function for About Page."""
+    return render_template("about.html")
 
 
 @app.route('/move/<i>/<j>')
-def move(i, j):
-    global games
+def make_move(i, j):
+    player = get_player()
+    game = get_game(player)
 
-    print(session)
-    print(games)
-    player, game = get_player_game()
-
-    if game.id not in games:
-        games[game.id] = build_board_and_players()
-    board, mcts_player, mcts_human_hint = games[game.id]
+    board = get_board(game)
+    mcts_player = get_mcts_player(2)
+    mcts_human_hint = get_mcts_player(1)
 
     hint, move_probs = mcts_human_hint.get_action(board, return_prob=True)
 
@@ -185,8 +147,6 @@ def move(i, j):
 
     move = (board.height - int(i) - 1) * board.width + int(j)
     score = move_probs[move]
-    print(board.availables)
-    print(move)
     board.do_move(move)
 
     player_move = Move(game=game, player_move=True, location=move, score=score,
@@ -198,86 +158,67 @@ def move(i, j):
     # check if the game has ended
     end, winner = board.game_end()
     if end:
-        print(winner)
-        game.player_won = winner
+        game.player_won = winner == 1
         db.session.add(game)
         db.session.commit()
-
-        del games[game.id]
         session.pop('game_id', None)
-        # board = Board()  # reset board
-        # board.init_board(1)
-        # mcts_player.reset_player()
         return redirect("/", code=302)
 
     move = mcts_player.get_action(board)
     board.do_move(move)
 
-    opponent_move = Move(game=game, player_move=False, location=move)
+    opponent_move = Move(game=game, player_move=False, location=int(move))
     db.session.add(opponent_move)
     db.session.commit()
 
     end, winner = board.game_end()
     if end:
-        print(winner)
-        game.player_won = winner
+        game.player_won = winner == 1
         db.session.add(game)
         db.session.commit()
-
-        del games[game.id]
         session.pop('game_id', None)
-        # board = Board()  # reset board
-        # board.init_board(1)
-        # mcts_player.reset_player()
-    return redirect("/?score={}".format(score), code=302)
+    return redirect("/", code=302)
 
 
 @app.route('/hint')
 def hint():
-    player, game = get_player_game()
+    player = get_player()
+    game = get_game(player)
 
-    global games
-    if game.id not in games:
-        games[game.id] = build_board_and_players()
-    board, mcts_player, mcts_human_hint = games[game.id]
+    board = get_board(game)
+    mcts_player = get_mcts_player(2)
+    mcts_human_hint = get_mcts_player(1)
 
     move, move_probs = mcts_human_hint.get_action(board, return_prob=True)
+
     score = move_probs[move]
-    print(board.availables)
-    print(move)
     board.do_move(move)
 
-    player_move = Move(game=game, player_move=True, location=move, score=score,
-                       hint_location=move, raw_move_scores=str(move_probs),
-                       is_hint=True)
+    player_move = Move(game=game, player_move=True, location=int(move),
+                       score=score, hint_location=move,
+                       raw_move_scores=str(move_probs), is_hint=True)
     db.session.add(player_move)
     db.session.commit()
 
     # check if the game has ended
     end, winner = board.game_end()
     if end:
-        del games[game.id]
         session.pop('game_id', None)
-        # board = Board()  # reset board
-        # board.init_board(1)
-        # mcts_player.reset_player()
         return redirect("/", code=302)
 
     move = mcts_player.get_action(board)
     board.do_move(move)
 
-    opponent_move = Move(game=game, player_move=False, location=move)
+    opponent_move = Move(game=game, player_move=False, location=int(move))
     db.session.add(opponent_move)
     db.session.commit()
 
     end, winner = board.game_end()
     if end:
-        del games[game.id]
         session.pop('game_id', None)
-        # board = Board()  # reset board
-        # board.init_board(1)
-        # mcts_player.reset_player()
-    return redirect("/?score={}".format(score), code=302)
+        return redirect("/", code=302)
+
+    return redirect("/", code=302)
 
 
 @app.route('/<path:path>')
