@@ -1,12 +1,15 @@
 import sys
 import pickle
 import uuid
+from random import choice
 
 from flask import Flask
 from flask import render_template
 from flask import redirect
 from flask import session
 from flask import send_from_directory
+from flask import jsonify
+from flask import request
 
 from models import db
 from models import Player
@@ -25,7 +28,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 db.init_app(app)
 
 # change the key to clear cookies
-app.secret_key = b'azsrdf0zdaf09dasd902j323jkh32jhkd0sdjlksdljn1n120919030923'
+app.secret_key = b'azsrdf0zdaf09dasd902j323xjkh32jhkd0sdjlksdljn1n120919030923'
 
 
 # Create the database if it does not exist.
@@ -38,7 +41,9 @@ def get_player():
             Player.query.filter_by(id=session['player_id']).first() is None):
         username = str(uuid.uuid1())
         # username = str(hash(request.remote_addr))
-        player = Player(username=username, condition='immediate feedback')
+        # condition = choice(['immediate', 'control'])
+        condition = 'immediate'
+        player = Player(username=username, condition=condition)
         db.session.add(player)
         db.session.commit()
         session['player_id'] = player.id
@@ -49,13 +54,15 @@ def get_player():
 
 def get_game(player):
     if ('game_id' not in session or
-            Game.query.filter_by(id=session['game_id']).first() is None):
+            Game.query.filter_by(id=session['game_id'],
+                                 player_won=None).first() is None):
         game = Game(player=player, player_is_white=False, training_game=True)
         db.session.add(game)
         db.session.commit()
         session['game_id'] = game.id
     else:
-        game = Game.query.filter_by(id=session['game_id']).first()
+        game = Game.query.filter_by(id=session['game_id'],
+                                    player_won=None).first()
     return game
 
 
@@ -94,6 +101,11 @@ def get_mcts_player(player_index=1):
     return mcts_player
 
 
+@app.route('/consent')
+def consent():
+    return render_template('consent.html')
+
+
 @app.route('/')
 def training():
     player = get_player()
@@ -103,26 +115,18 @@ def training():
              (not move.player_move and game.player_is_white)
              else "white" for move in game.moves}
 
-    for move in game.moves:
-        print(move)
-
     score = None
     if len(game.moves) > 1:
         score = game.moves[-2].score
-        print("MY SCORE", score)
 
-    state = []
-    for i in range(game.size - 1, -1, -1):
-        state.append([])
-        for j in range(game.size):
-            loc = i * game.size + j
-            if loc in moves:
-                state[-1].append(moves[loc])
-            else:
-                state[-1].append('-')
+    if len(moves) % 2 == 0:
+        color = 'black'
+    else:
+        color = 'white'
 
-    return render_template('training.html', state=state, size=game.size,
-                           score=score)
+    page = str(player.condition) + '.html'
+    return render_template(page, moves=moves, color=color,
+                           size=game.size, score=score)
 
 
 @app.route("/about")
@@ -131,8 +135,7 @@ def about():
     return render_template("about.html")
 
 
-@app.route('/move/<i>/<j>')
-def make_move(i, j):
+def move_player_and_opponent(i, j):
     player = get_player()
     game = get_game(player)
 
@@ -144,7 +147,7 @@ def make_move(i, j):
 
     # print(move_probs)
 
-    move = (board.height - int(i) - 1) * board.width + int(j)
+    move = int(i) * board.height + int(j)
     score = move_probs[move]
     board.do_move(move)
 
@@ -176,7 +179,98 @@ def make_move(i, j):
         db.session.add(game)
         db.session.commit()
         session.pop('game_id', None)
-    return redirect("/", code=302)
+
+
+def add_move(i, j):
+    player = get_player()
+    game = get_game(player)
+
+    human = False
+    if len(game.moves) % 2 == 0:
+        human = True
+
+    board = get_board(game)
+
+    if human:
+        mcts_player = get_mcts_player(1)
+    else:
+        mcts_player = get_mcts_player(2)
+
+    hint, move_probs = mcts_player.get_action(board, return_prob=True)
+
+    # print(move_probs)
+
+    move = int(i) * board.height + int(j)
+    score = move_probs[move]
+    board.do_move(move)
+
+    player_move = Move(game=game, player_move=human, location=move,
+                       score=score, hint_location=hint,
+                       raw_move_scores=str(move_probs), is_hint=False)
+
+    db.session.add(player_move)
+    db.session.commit()
+
+    # check if the game has ended
+    end, winner = board.game_end()
+    if end:
+        game.player_won = winner == 1
+        db.session.add(game)
+        db.session.commit()
+        session.pop('game_id', None)
+        # return redirect("/", code=302)
+
+    if player_move.player_move and game.player_is_white:
+        color = 'white'
+    elif not player_move.player_move and not game.player_is_white:
+        color = 'white'
+    else:
+        color = 'black'
+
+    return {'end': end, 'winner': winner, 'score': score, 'color': color}
+
+
+@app.route('/move/<i>/<j>', methods=['GET', 'POST'])
+def make_move(i, j):
+    if request.method == 'POST':
+        return jsonify(add_move(i, j))
+    else:
+        move_player_and_opponent(i, j)
+        return redirect("/", code=302)
+
+
+@app.route('/optimal_move', methods=['POST'])
+def optimal_move():
+    player = get_player()
+    game = get_game(player)
+
+    human = False
+    if len(game.moves) % 2 == 0:
+        human = True
+
+    board = get_board(game)
+
+    if human:
+        mcts_player = get_mcts_player(1)
+    else:
+        mcts_player = get_mcts_player(2)
+
+    optimal_move, move_probs = mcts_player.get_action(board, return_prob=True)
+
+    score = move_probs[optimal_move]
+
+    if human and game.player_is_white:
+        color = 'white'
+    elif not human and not game.player_is_white:
+        color = 'white'
+    else:
+        color = 'black'
+
+    i = int(optimal_move) // board.height
+    j = int(optimal_move) % board.height
+
+    return jsonify({'color': color, 'location': int(optimal_move), 'score':
+                    score, 'i': i, 'j': j})
 
 
 @app.route('/hint')

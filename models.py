@@ -8,9 +8,9 @@ db = SQLAlchemy()
 
 class Player(db.Model):
     CONDITIONS = [
-        ('no feedback', 'No Feedback'),
-        ('immediate feedback', 'Immediate Feedback'),
-        ('delayed feedback', 'Delayed Feedback')
+        ('control', 'control'),
+        ('immediate', 'immediate'),
+        ('delayed', 'delayed')
     ]
 
     id = db.Column(db.Integer, primary_key=True)

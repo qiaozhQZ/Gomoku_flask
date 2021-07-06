@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+{% block heading %}Gomoku Training{% endblock %}
+
+{% block content%}
+
+<div id="toolbar">
+</div>
+
+<div id="winning_dialog">
+	<h3 id="winning_text">You Won!</h3>	
+	<button id="new_game_button">Start new game</button>
+</div>
+
+<table class="board">
+    {%for i in range(0, size)%}
+    <tr>
+        {%for j in range(0, size)%}
+            <td>
+                {% if i * size + j in moves and moves[i * size + j] == "black" %}
+		    <div id="loc{{i * size + j}}" class="blackstone"></div>
+                {% elif i * size + j in moves and moves[i * size + j] == "white" %}
+		    <div id="loc{{i * size + j}}" class="whitestone"></div>
+                {% else %}
+                    <div id="loc{{i * size + j}}" class="move_location" 
+			 data-row="{{i}}", data-col="{{j}}"></div>
+                {% endif %}
+            </td>
+        {%endfor%}
+    </tr>
+    {%endfor%}
+</table>
+{% endblock %}
+
+{% block footer %}
+<script>
+	let move_color = '{{ color }}';
+</script>
+<script src="training.js"></script>
+{% endblock %}
