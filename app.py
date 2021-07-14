@@ -105,6 +105,14 @@ def get_mcts_player(player_index=1):
 def consent():
     return render_template('consent.html')
 
+@app.route('/tutorial')
+def tutorial():
+    return render_template('tutorial.html')
+
+@app.route('/goodbye')
+def goodbye():
+    return render_template('goodbye.html')
+
 
 @app.route('/')
 def training():
@@ -129,10 +137,10 @@ def training():
                            size=game.size, score=score)
 
 
-@app.route("/about")
-def about():
-    """View function for About Page."""
-    return render_template("about.html")
+# @app.route("/about")
+# def about():
+#     """View function for About Page."""
+#     return render_template("about.html")
 
 
 def move_player_and_opponent(i, j):
