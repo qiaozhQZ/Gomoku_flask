@@ -1,11 +1,6 @@
-h1 {
+#heading {
 	color: black;
 	text-align: center;
-}
-
-p {
-	font-family: verdana;
-	font-size: 20px;
 }
 
 .board {
@@ -83,6 +78,17 @@ p {
 
 #consent {
 	border: 2px solid #000000;
-	width: 500px;
+	padding: 0px 15px 15px 15px;
+	width: 600px;
 	margin-left: auto;
 	margin-right: auto;
+}
+
+#agree_button{
+	margin-right: 15px;
+}
+
+#consent_buttons{
+	width: 100%;
+	text-align: center;
+}
