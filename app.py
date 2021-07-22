@@ -51,6 +51,11 @@ def get_player():
         player = Player.query.filter_by(id=session['player_id']).first()
     return player
 
+def redirect_player(player, cur_page):
+    if player.stage != cur_page:
+        # redirect user to the stage they should be on
+        redirect('/{}'.format(player.stage))
+
 
 def get_game(player):
     if ('game_id' not in session or
@@ -100,23 +105,35 @@ def get_mcts_player(player_index=1):
 
     return mcts_player
 
+# @app.route('/landing')
+# def landing():
+#     return render_template('landing.html')
 
 @app.route('/consent')
 def consent():
+    redirect_player(get_player(), 'consent')
     return render_template('consent.html')
 
-@app.route('/tutorial')
+@app.route('/instructions')
 def tutorial():
-    return render_template('tutorial.html')
+    redirect_player(get_player(), 'instructions')
+    return render_template('instructions.html')
+
+@app.route('/survey')
+def survey():
+    redirect_player(get_player(), 'survey')
+    return render_template('survey.html')
 
 @app.route('/goodbye')
 def goodbye():
     return render_template('goodbye.html')
 
 
-@app.route('/')
+
+@app.route('/training')
 def training():
     player = get_player()
+    redirect_player(player, 'training')
     game = get_game(player)
     moves = {move.location: "black" if
              (move.player_move and not game.player_is_white) or
