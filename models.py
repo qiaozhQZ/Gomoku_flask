@@ -13,10 +13,17 @@ class Player(db.Model):
         ('delayed', 'delayed')
     ]
 
+    STAGES = [('consent', 'consent'),
+            ('instructions', 'instructions'), 
+            ('training', 'training'),
+            ('testing', 'testing'), 
+            ('survey', 'survey')]
+
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     games = db.relationship('Game', backref='player', lazy=True)
     condition = db.Column(ChoiceType(CONDITIONS))
+    stage = db.Column(ChoiceType(STAGES), default='consent')
 
     def __repr__(self):
         return '<Player: {}>'.format(self.username)
