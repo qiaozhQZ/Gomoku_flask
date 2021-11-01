@@ -76,7 +76,15 @@
 	display: none;
 }
 
-#consent {
+/* #consent {
+	border: 2px solid #000000;
+	padding: 0px 15px 15px 15px;
+	width: 600px;
+	margin-left: auto;
+	margin-right: auto;
+} */
+
+.content_box {
 	border: 2px solid #000000;
 	padding: 0px 15px 15px 15px;
 	width: 600px;
@@ -84,11 +92,23 @@
 	margin-right: auto;
 }
 
-#agree_button{
-	margin-right: 15px;
-}
-
 #consent_buttons{
 	width: 100%;
 	text-align: center;
 }
+
+/* change to left and right button */
+
+#agree_button{ 
+	margin-right: 15px;
+}
+
+#instructions_buttons{
+	width: 100%;
+	text-align: center;
+}
+
+#yes_button{
+	margin-right: 15px;
+}
+
