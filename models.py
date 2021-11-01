@@ -17,13 +17,20 @@ class Player(db.Model):
             ('instructions', 'instructions'), 
             ('training', 'training'),
             ('testing', 'testing'), 
-            ('survey', 'survey')]
+            ('survey', 'survey'),
+            ('done', 'done')]
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     games = db.relationship('Game', backref='player', lazy=True)
     condition = db.Column(ChoiceType(CONDITIONS))
     stage = db.Column(ChoiceType(STAGES), default='consent')
+    consent_start = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    instructions_start = db.Column(db.DateTime, default=None)
+    training_start = db.Column(db.DateTime, default=None)
+    testing_start = db.Column(db.DateTime, default=None)
+    survey_start = db.Column(db.DateTime, default=None)
+    experiment_end = db.Column(db.DateTime, default=None)
 
     def __repr__(self):
         return '<Player: {}>'.format(self.username)
