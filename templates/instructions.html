@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Gomoku Experiment Instructions{% endblock %}
+{% block heading %}Gomoku Experiment Instructions{% endblock %}
+
+{% block content%}
+
+
+<div id="instructions" class="content_box">
+
+<h2>Basic rule of Gomoku</h2>
+
+<p>Players alternate turns placing a stone of their color on an empty intersection. Black plays first. 
+The winner is the first player to form an unbroken chain of five stones horizontally, vertically, or diagonally.</p>
+
+<h2>How to use our tutor</h2>
+<p>The whole experiment lasts around 30 minutes, with 5 minutes training games and 5 testing games.
+During the training games, you would be provided with feedback.
+During the testing games, you would only know the result of your games.</p>
+
+<p>Please do not navigate away from the page during the experiment.</p>
+
+<h2>Are you ready to start the experiment?</h2>
+
+    <div id="instructions_buttons">
+        <button id="yes_button">Yes</button> 
+        <button id="no_button">No</button>
+    </div>
+    
+</div>
+
+<script>
+$(function() {
+    console.log( "ready!" ); //wait until all pages load
+    $('#yes_button').click(function() {
+        $.ajax({
+            type: "POST",
+            url: '/advance_stage',
+            data: JSON.stringify({'page':'instructions'}),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function() {
+                window.location.href = "/training"; // do not have training.html, different conditions
+            },
+        });
+    });
+    $('#no_button').click(function() {
+        window.location.href = "/goodbye";
+    });
+});
+</script>
+
+{% endblock %}
