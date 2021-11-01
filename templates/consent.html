@@ -5,7 +5,7 @@
 
 {% block content%}
 
-<div id="consent">
+<div id="consent" class="content_box">
 
 <h2>Study Description</h2>
 
@@ -47,8 +47,9 @@ There will be no cost to you if you participate in this study.</p>
 
 <h2>Confidentiality</h2>
 
-<p>The data captured for the research does not include any personally identifiable information about you. Your IP address and Worker ID will not be captured and stored.<br>
-By participating in this research, you understand and agree that Teachable AI Lab at Drexel University may be required to disclose your consent form, data, and other personally identifiable information as required by law, regulation, subpoena, or court order. Otherwise, your confidentiality will be maintained in the following manner:<br>
+<p>The data captured for the research does not include any personally identifiable information about you. Your IP address and Worker ID will not be captured and stored.</p>
+
+<p>By participating in this research, you understand and agree that Teachable AI Lab at Drexel University may be required to disclose your consent form, data, and other personally identifiable information as required by law, regulation, subpoena, or court order. Otherwise, your confidentiality will be maintained in the following manner:</p>
 Your consent form will be stored on an encrypted hard drive at a locked location on Teachable AI Lab property and will not be disclosed to third parties.<br>
 Finally, by participating, you understand and agree that the data and information gathered during this study may be used by Teachable AI Lab and published and/or disclosed by Teachable AI Lab to others outside of Teachable AI Lab.<br>
 However, your name, address, contact information, and other direct personal identifiers in your consent form will not be mentioned in any such publication or dissemination of the research data and/or results by Teachable AI Lab.<br>
@@ -74,8 +75,8 @@ By accepting below you agree to the following statements:</p>
 <p>Do you understand and consent to these terms?</p>
 
 <div id="consent_buttons">
-<a id="agree_button" href="/instructions">I agree</a> 
-<a id="disagree_button" href="javascript:window.close();">No thanks</a>
+<button id="agree_button">I agree</button> 
+<button id="disagree_button">No thanks</button>
 </div>
 
 <!-- <input id = "agree_button" type = "button" value = "I agree">
@@ -85,5 +86,26 @@ By accepting below you agree to the following statements:</p>
 <label for="consent1"> I agree to the terms and conditions</label><br> -->
 
 </div>
+
+<script>
+$(function() {
+    console.log( "ready!" ); //wait until all pages load
+    $('#agree_button').click(function() {
+        $.ajax({
+            type: "POST",
+            url: '/advance_stage',
+            data: JSON.stringify({'page':'consent'}), //convert to string
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function() {
+                window.location.href = "/instructions";
+            },
+        });
+    });
+    $('#disagree_button').click(function() {
+        window.location.href = "/goodbye";
+    });
+});
+</script>
 
 {% endblock %}
