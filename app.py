@@ -1,6 +1,8 @@
 import sys
 import pickle
 import uuid
+import json
+import datetime
 from random import choice
 
 from flask import Flask
@@ -41,8 +43,8 @@ def get_player():
             Player.query.filter_by(id=session['player_id']).first() is None):
         username = str(uuid.uuid1())
         # username = str(hash(request.remote_addr))
-        # condition = choice(['immediate', 'control'])
-        condition = 'immediate'
+        condition = choice(['immediate', 'control']) #assign into different conditions
+        # condition = 'immediate'
         player = Player(username=username, condition=condition)
         db.session.add(player)
         db.session.commit()
@@ -54,14 +56,18 @@ def get_player():
 def redirect_player(player, cur_page):
     if player.stage != cur_page:
         # redirect user to the stage they should be on
-        redirect('/{}'.format(player.stage))
+        return redirect('/{}'.format(player.stage))
+    
+    print(player.stage)
+    print(cur_page)
 
 
 def get_game(player):
     if ('game_id' not in session or
             Game.query.filter_by(id=session['game_id'],
                                  player_won=None).first() is None):
-        game = Game(player=player, player_is_white=False, training_game=True)
+        is_testing = player.stage == 'testing'
+        game = Game(player=player, player_is_white=False, training_game=not is_testing)
         db.session.add(game)
         db.session.commit()
         session['game_id'] = game.id
@@ -109,31 +115,93 @@ def get_mcts_player(player_index=1):
 # def landing():
 #     return render_template('landing.html')
 
+@app.route('/advance_stage', methods = ['POST']) #only accepting 'POST'
+def advance_stage():
+    '''automatically direct to the correct page'''
+    print('advance_stage')
+
+    # print(request.get_json(force=True))
+    print(request.data)
+    print(request.data.decode('UTF-8'))
+    print(json.loads(request.data.decode('UTF-8'), strict=False))
+    print('beep')
+
+    p = get_player()
+
+    if p.stage == 'consent' and request.get_json().get('page') == 'consent':
+        p.instructions_start = datetime.datetime.utcnow()
+        p.stage = 'instructions'
+    elif p.stage == 'instructions' and request.get_json().get('page')== 'instructions':
+        p.training_start = datetime.datetime.utcnow()
+        p.stage = 'training'
+    elif p.stage == 'training' and request.get_json().get('page') == 'training':
+        p.testing_start = datetime.datetime.utcnow()
+        p.stage = 'testing'
+        session.pop('game_id', None) #start a new game for testing
+    elif p.stage == 'testing' and request.get_json().get('page') == 'testing':
+        p.survey_start = datetime.datetime.utcnow()
+        p.stage = 'survey'
+    elif p.stage == 'survey' and request.get_json().get('page') == 'survey':
+        p.experiment_end = datetime.datetime.utcnow()
+        p.stage = 'done'
+
+    # save to the database
+    db.session.add(p)
+    db.session.commit() 
+
+    return json.dumps({'next_page':'/{}'.format(p.stage)}), 200, {'ContentType':'application/json'}
+
+@app.route('/training_time_left')
+def training_time_left():
+    p = get_player()
+    delta = datetime.datetime.utcnow() - p.training_start #calculate the period of time
+    ############# modify the number for testing #############
+    seconds = max(0, 300 - delta.total_seconds()) #take the seconds left from 300 seconds
+    return json.dumps({'seconds':seconds}), 200, {'ContentType':'application/json'} #return a dictionary
+
+@app.route('/testing_games_left')
+def testing_games_left():
+    p = get_player()
+    test_games = Game.query.filter_by(player_id=p.id, training_game=False)
+    ############# modify the number for testing #############
+    games = max(0, 2 - test_games.count()) #calculate the number of games left
+    return json.dumps({'games':games}), 200, {'ContentType':'application/json'} #return a dictionary
+
 @app.route('/consent')
 def consent():
-    redirect_player(get_player(), 'consent')
+    r = redirect_player(get_player(), 'consent')
+    if r is not None:
+        return r
     return render_template('consent.html')
 
 @app.route('/instructions')
 def tutorial():
-    redirect_player(get_player(), 'instructions')
+    r = redirect_player(get_player(), 'instructions')
+    if r is not None:
+        return r
     return render_template('instructions.html')
 
 @app.route('/survey')
 def survey():
-    redirect_player(get_player(), 'survey')
+    r = redirect_player(get_player(), 'survey')
+    if r is not None:
+        return r
     return render_template('survey.html')
 
 @app.route('/goodbye')
 def goodbye():
     return render_template('goodbye.html')
 
-
+@app.route('/done')
+def done():
+    return render_template('done.html')
 
 @app.route('/training')
 def training():
     player = get_player()
-    redirect_player(player, 'training')
+    r = redirect_player(player, 'training')
+    if r is not None:
+        return r
     game = get_game(player)
     moves = {move.location: "black" if
              (move.player_move and not game.player_is_white) or
@@ -150,6 +218,31 @@ def training():
         color = 'white'
 
     page = str(player.condition) + '.html'
+    return render_template(page, moves=moves, color=color,
+                           size=game.size, score=score)
+
+@app.route('/testing')
+def testing():
+    player = get_player()
+    r = redirect_player(player, 'testing')
+    if r is not None:
+        return r
+    game = get_game(player)
+    moves = {move.location: "black" if
+             (move.player_move and not game.player_is_white) or
+             (not move.player_move and game.player_is_white)
+             else "white" for move in game.moves}
+
+    score = None
+    if len(game.moves) > 1:
+        score = game.moves[-2].score
+
+    if len(moves) % 2 == 0:
+        color = 'black'
+    else:
+        color = 'white'
+
+    page = 'testing.html'
     return render_template(page, moves=moves, color=color,
                            size=game.size, score=score)
 
