@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Gomoku Experiment Survey{% endblock %}
+{% block heading %}Gomoku Experiment Survey{% endblock %}
+
+{% block content%}
+
+<div id="Survey">
+
+<h2>Study Description</h2>
+
+<p>Welcome to the Gomoku Tutor Effectiveness Testing Experiment (IRB Protocol: 2104008486). This task is part of a research study being conducted by the Teachable AI Lab at Drexel University. 
+The purpose of the research is to better understand how artificial intelligence algorithms can be used to teach people in making better strategic decisions on tasks where the feedback is delayed.
+    
+<h2>Procedures</h2>
+
+<p>During this experiment, which we expect to take approximately 30 minutes, you will be asked to either play the game of Gomoku with no feedback, or play with instant feedback or play with delayed feedback.</p> 
+
+<p>Your interactions with our designed Gomoku AI player will take place through a web-based simulation environment and a web-based user interface. Please see the detailed procedure below:</p>
+
+<ol type = "1">
+    <li>Upon acceptance of this informed consent agreement, you will be randomly assigned into a group without feedback, with instant feedback or with delayed feedback.</li>
+    <li>Based on these random assignments, you will receive the corresponding instructions including the basic rules of the game of Gomoku.</li>
+    <li>Then you would play against our Gomoku AI for around 30 minutes.</li>
+    <li>After the interacting with Gomoku AI, you would play five more games with the Gomoku AI without any feedback.</li>
+    <li>Lastly, we will ask you to complete a short survey to collect your feedback and experience from the interaction session.</li>
+
+</ol>
+
+<h2>Participant Requirements</h2>
+
+<p>Participation in this study is limited to individuals aged 18 and older and fluent in English. 
+Additionally, all participants are required to have a modern web browser, such as Chrome, Safari, Edge, or Firefox, etc.</p>
+
+<h2>Risks</h2>
+
+<p>The risks and discomfort associated with participation in this study are no greater than those ordinarily encountered in daily life or during other online activities.</p>
+
+<h2>Benefits</h2> 
+
+<p>You might develop interest in the game of Gomoku and become a better player at the end of the study. Moreover, the knowledge received may be of value to humanity.</p>
+
+<h2>Compensation and Costs</h2>
+
+<p>For participating in this task, you will be paid with a base of $5 and $0.5 for every game you win against the Gomoku AI (at $2.5 maximum) directly through Mechanical Turk.<br>
+There will be no cost to you if you participate in this study.</p>
+
+<h2>Confidentiality</h2>
+
+<p>The data captured for the research does not include any personally identifiable information about you. Your IP address and Worker ID will not be captured and stored.<br>
+By participating in this research, you understand and agree that Teachable AI Lab at Drexel University may be required to disclose your consent form, data, and other personally identifiable information as required by law, regulation, subpoena, or court order. Otherwise, your confidentiality will be maintained in the following manner:<br>
+Your consent form will be stored on an encrypted hard drive at a locked location on Teachable AI Lab property and will not be disclosed to third parties.<br>
+Finally, by participating, you understand and agree that the data and information gathered during this study may be used by Teachable AI Lab and published and/or disclosed by Teachable AI Lab to others outside of Teachable AI Lab.<br>
+However, your name, address, contact information, and other direct personal identifiers in your consent form will not be mentioned in any such publication or dissemination of the research data and/or results by Teachable AI Lab.<br>
+After removing any personally identifiable information, collected data could be used for future research studies or distributed to another investigator for future research studies without additional informed consent from the subject.</p>
+
+<h2>Right to Ask Questions & Contact Information</h2>
+    
+<p>If you have questions, concerns, or complaints, or think this research has hurt you or made you sick, talk to the research team at the phone number listed above on the first page.
+This research is being overseen by an Institutional Review Board (“IRB”). An IRB is a group of people who perform an independent review of research studies. You may talk to them at (267) 359-2471 or HRPP@drexel.edu if:
+<li>You have questions, concerns, or complaints that are not being answered by the research team.</li>
+<li>You are not getting answers from the research team.</li>
+<li>You cannot reach the research team.</li>
+<li>You want to talk to someone else about the research.</li>
+<li>You have questions about your rights as a research subject.</li></p>
+    
+<h2>Voluntary Participation</h2> 
+
+<p>Your participation in this research is voluntary. You may discontinue participation at any time during the research activity.<br>
+By accepting below you agree to the following statements:</p>
+<li>I am 18 years of age or older</li>
+<li>I have read and understood the information above </li>
+<li>I want to participate in this research and continue with the experiment</li>
+<p>Do you understand and consent to these terms?</p>
+
+<div id="consent_buttons">
+<button id="agree_button">I agree</button> 
+<button id="disagree_button">No thanks</button>
+</div>
+
+<!-- <input id = "agree_button" type = "button" value = "I agree">
+<button id="agree_button">I agree</button> -->
+
+<!-- <input type="checkbox" id="consent1" name="consent1" value="agree">
+<label for="consent1"> I agree to the terms and conditions</label><br> -->
+
+</div>
+
+<script>
+$(function() {
+    console.log( "ready!" ); //wait until all pages load
+    $('#agree_button').click(function() {
+        $.ajax({
+            type: "POST",
+            url: '/advance_stage',
+            data: JSON.stringify({'page':'survey'}),
+            contentType: "application/json",
+            dataType: 'json',
+            success: function() {
+                window.location.href = "/instructions";
+            },
+        });
+    });
+    $('#disagree_button').click(function() {
+        window.location.href = "/goodbye";
+    });
+});
+</script>
+
+{% endblock %}
