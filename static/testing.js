@@ -2,7 +2,7 @@ $().ready(function(){
 	$.ajax({
 		type: "GET",
 		url: '/testing_games_left',
-		data: '{}',
+		data: '{}', //should be empty here
 		contentType: 'application/json',
 		dataType: 'json',
 		success: function(games_left) {
@@ -11,3 +11,4 @@ $().ready(function(){
 		},
 	});
 });
+// need to add a query to advance_stage
