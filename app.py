@@ -262,9 +262,6 @@ def done():
     return render_template('done.html')
 
 
-
-
-
 # @app.route("/about")
 # def about():
 #     """View function for About Page."""
