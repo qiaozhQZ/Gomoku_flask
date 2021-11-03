@@ -261,13 +261,6 @@ def goodbye():
 def done():
     return render_template('done.html')
 
-
-# @app.route("/about")
-# def about():
-#     """View function for About Page."""
-#     return render_template("about.html")
-
-
 def move_player_and_opponent(i, j): ##### time the function and log into a file
     player = get_player()
     game = get_game(player)
