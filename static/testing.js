@@ -12,3 +12,4 @@ $().ready(function(){
 	});
 });
 // need to add a query to advance_stage
+// added in game.js
