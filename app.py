@@ -3,6 +3,7 @@ import pickle
 import uuid
 import json
 import datetime
+import torch
 from random import choice
 
 from flask import Flask
@@ -23,6 +24,7 @@ sys.path.append('../AlphaZero_Gomoku')
 from game import Board  # noqa: E402
 from mcts_alphaZero import MCTSPlayer  # noqa: E402
 from policy_value_net_numpy import PolicyValueNetNumpy  # noqa: E402
+from policy_value_net_pytorch import PolicyValueNet 
 
 # Setup the Flask app with the database
 app = Flask(__name__)
@@ -52,6 +54,7 @@ def get_player():
     else:
         player = Player.query.filter_by(id=session['player_id']).first()
     return player
+
 
 def redirect_player(player, cur_page):
     if player.stage != cur_page:
@@ -97,16 +100,23 @@ def get_mcts_player(player_index=1):
     board.init_board()
 
     size = 8
-    model_file = '../AlphaZero_Gomoku/best_policy_8_8_5.model'
+    model_file = '../AlphaZero_Gomoku/best_policy_885_2_25300.model'
 
-    try:
-        policy_param = pickle.load(open(model_file, 'rb'))
-    except Exception:
-        policy_param = pickle.load(open(model_file, 'rb'), encoding='bytes')
+    # for numpy
+    # try:
+    #     policy_param = pickle.load(open(model_file, 'rb'))
+    # except Exception:
+    #     policy_param = pickle.load(open(model_file, 'rb'), encoding='bytes')
 
-    best_policy = PolicyValueNetNumpy(size, size, policy_param)
+    # best_policy = PolicyValueNetNumpy(size, size, policy_param)
+
+    use_gpu = torch.cuda.is_available()
+    # use_gpu = False
+    print('using GPU: ', use_gpu)
+
+    best_policy = PolicyValueNet(size, size, model_file = model_file, use_gpu=use_gpu)
     mcts_player = MCTSPlayer(best_policy.policy_value_fn, c_puct=5,
-                             n_playout=200)
+                             n_playout=200) # modify n_playout to make easier models
     mcts_player.set_player_ind(player_index)
 
     return mcts_player
@@ -114,6 +124,11 @@ def get_mcts_player(player_index=1):
 # @app.route('/landing')
 # def landing():
 #     return render_template('landing.html')
+
+@app.route('/new_game', methods = ['POST'])
+def new_game():
+    session.pop('game_id', None)
+    return json.dumps({}), 200, {'ContentType':'application/json'}
 
 @app.route('/advance_stage', methods = ['POST']) #only accepting 'POST'
 def advance_stage():
@@ -156,7 +171,7 @@ def training_time_left():
     p = get_player()
     delta = datetime.datetime.utcnow() - p.training_start #calculate the period of time
     ############# modify the number for testing #############
-    seconds = max(0, 300 - delta.total_seconds()) #take the seconds left from 300 seconds
+    seconds = max(0, 900 - delta.total_seconds()) #take the seconds left from 300 seconds
     return json.dumps({'seconds':seconds}), 200, {'ContentType':'application/json'} #return a dictionary
 
 @app.route('/testing_games_left')
@@ -164,7 +179,7 @@ def testing_games_left():
     p = get_player()
     test_games = Game.query.filter_by(player_id=p.id, training_game=False)
     ############# modify the number for testing #############
-    games = max(0, 2 - test_games.count()) #calculate the number of games left
+    games = max(0, 6 - test_games.count()) #calculate the number of games left
     return json.dumps({'games':games}), 200, {'ContentType':'application/json'} #return a dictionary
 
 @app.route('/consent')
@@ -180,21 +195,6 @@ def tutorial():
     if r is not None:
         return r
     return render_template('instructions.html')
-
-@app.route('/survey')
-def survey():
-    r = redirect_player(get_player(), 'survey')
-    if r is not None:
-        return r
-    return render_template('survey.html')
-
-@app.route('/goodbye')
-def goodbye():
-    return render_template('goodbye.html')
-
-@app.route('/done')
-def done():
-    return render_template('done.html')
 
 @app.route('/training')
 def training():
@@ -246,6 +246,24 @@ def testing():
     return render_template(page, moves=moves, color=color,
                            size=game.size, score=score)
 
+@app.route('/survey')
+def survey():
+    r = redirect_player(get_player(), 'survey')
+    if r is not None:
+        return r
+    return render_template('survey.html')
+
+@app.route('/goodbye')
+def goodbye():
+    return render_template('goodbye.html')
+
+@app.route('/done')
+def done():
+    return render_template('done.html')
+
+
+
+
 
 # @app.route("/about")
 # def about():
@@ -253,7 +271,7 @@ def testing():
 #     return render_template("about.html")
 
 
-def move_player_and_opponent(i, j):
+def move_player_and_opponent(i, j): ##### time the function and log into a file
     player = get_player()
     game = get_game(player)
 
