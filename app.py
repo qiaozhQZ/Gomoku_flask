@@ -26,10 +26,12 @@ from mcts_alphaZero import MCTSPlayer  # noqa: E402
 from policy_value_net_numpy import PolicyValueNetNumpy  # noqa: E402
 from policy_value_net_pytorch import PolicyValueNet 
 
+
 # Setup the Flask app with the database
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 db.init_app(app)
+
 
 # change the key to clear cookies
 app.secret_key = b'azsrdf0zdaf09dasd902j323xjkh32jhkd0sdjlksdljn1n120919030923'
@@ -120,6 +122,7 @@ def get_mcts_player(player_index=1):
     mcts_player.set_player_ind(player_index)
 
     return mcts_player
+
 
 # @app.route('/landing')
 # def landing():
@@ -261,7 +264,9 @@ def goodbye():
 def done():
     return render_template('done.html')
 
-def move_player_and_opponent(i, j): ##### time the function and log into a file
+
+######## time the function and log into a file ######
+def move_player_and_opponent(i, j): 
     player = get_player()
     game = get_game(player)
 
