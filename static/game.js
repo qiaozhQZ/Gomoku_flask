@@ -64,10 +64,20 @@ $().ready(function(){
 	});
 
 	$('#new_game_button').click(function(){
-		clear_board();
-		$('#toolbar').show();
-		$('#winning_dialog').hide();
-		enable_clicking();
+		// make a call to the new game
+		$.ajax({
+			type: "POST",
+			url: '/new_game',
+			data: JSON.stringify({}),
+			contentType: "application/json",
+			dataType: 'json',
+			success: function(resp) {
+				clear_board();
+				$('#toolbar').show();
+				$('#winning_dialog').hide();
+				enable_clicking();
+			},
+		});
 	});
 
 	function display_winner(winner){
@@ -88,7 +98,7 @@ $().ready(function(){
 			$.ajax({
 				type: "POST",
 				url: '/advance_stage',
-				data: '{}',
+				data: JSON.stringify({'page':'testing'}),
 				contentType: "application/json",
 				dataType: 'json',
 				success: function(resp) {
