@@ -124,10 +124,6 @@ def get_mcts_player(player_index=1):
     return mcts_player
 
 
-# @app.route('/landing')
-# def landing():
-#     return render_template('landing.html')
-
 @app.route('/new_game', methods = ['POST'])
 def new_game():
     session.pop('game_id', None)
