@@ -129,6 +129,7 @@ def new_game():
     session.pop('game_id', None)
     return json.dumps({}), 200, {'ContentType':'application/json'}
 
+
 @app.route('/advance_stage', methods = ['POST']) #only accepting 'POST'
 def advance_stage():
     '''automatically direct to the correct page'''
@@ -165,6 +166,7 @@ def advance_stage():
 
     return json.dumps({'next_page':'/{}'.format(p.stage)}), 200, {'ContentType':'application/json'}
 
+
 @app.route('/training_time_left')
 def training_time_left():
     p = get_player()
@@ -172,6 +174,7 @@ def training_time_left():
     ############# modify the number for testing #############
     seconds = max(0, 900 - delta.total_seconds()) #take the seconds left from 300 seconds
     return json.dumps({'seconds':seconds}), 200, {'ContentType':'application/json'} #return a dictionary
+
 
 @app.route('/testing_games_left')
 def testing_games_left():
@@ -181,6 +184,7 @@ def testing_games_left():
     games = max(0, 6 - test_games.count()) #calculate the number of games left
     return json.dumps({'games':games}), 200, {'ContentType':'application/json'} #return a dictionary
 
+
 @app.route('/consent')
 def consent():
     r = redirect_player(get_player(), 'consent')
@@ -188,12 +192,14 @@ def consent():
         return r
     return render_template('consent.html')
 
+
 @app.route('/instructions')
 def tutorial():
     r = redirect_player(get_player(), 'instructions')
     if r is not None:
         return r
     return render_template('instructions.html')
+
 
 @app.route('/training')
 def training():
@@ -220,6 +226,7 @@ def training():
     return render_template(page, moves=moves, color=color,
                            size=game.size, score=score)
 
+
 @app.route('/testing')
 def testing():
     player = get_player()
@@ -245,6 +252,7 @@ def testing():
     return render_template(page, moves=moves, color=color,
                            size=game.size, score=score)
 
+
 @app.route('/survey')
 def survey():
     r = redirect_player(get_player(), 'survey')
@@ -252,9 +260,11 @@ def survey():
         return r
     return render_template('survey.html')
 
+
 @app.route('/goodbye')
 def goodbye():
     return render_template('goodbye.html')
+
 
 @app.route('/done')
 def done():
