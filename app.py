@@ -4,7 +4,10 @@ import uuid
 import json
 import datetime
 import torch
+import yaml
+from yaml import Loader, Dumper
 from random import choice
+from os.path import exists
 
 from flask import Flask
 from flask import render_template
@@ -40,6 +43,24 @@ app.secret_key = b'azsrdf0zdaf09dasd902j323xjkh32jhkd0sdjlksdljn1n120919030923'
 # Create the database if it does not exist.
 with app.app_context():
     db.create_all()
+
+
+# configuration file
+if exists('config.yaml'):
+    with open('config.yaml', 'r') as fin:
+        # read the file into a file input
+        data = yaml.load(fin, Loader=Loader)
+        training_time = data['training_time']
+        testing_games = data['testing_games']
+else:
+    # numbers for launching the experiment
+    training_time = 900
+    testing_games = 5
+    # write to the yaml file
+    with open('config.yaml','w') as fout:
+        # save the variables to the yaml file
+        fout.write(yaml.dump({'training_time':training_time, 
+        'testing_games':testing_games}, Dumper=Dumper))
 
 
 def get_player():
@@ -164,6 +185,10 @@ def advance_stage():
     db.session.add(p)
     db.session.commit() 
 
+    if p.stage == 'survey':
+        # senf the participant id to Qualtrics
+        return json.dumps({'next_page':'https://drexel.qualtrics.com/jfe/form/SV_ewWFeWkDV9uHMtE?participant_id={}'.format(p.id)}), 200, {'ContentType':'application/json'}
+
     return json.dumps({'next_page':'/{}'.format(p.stage)}), 200, {'ContentType':'application/json'}
 
 
@@ -172,7 +197,7 @@ def training_time_left():
     p = get_player()
     delta = datetime.datetime.utcnow() - p.training_start #calculate the period of time
     ############# modify the number for testing #############
-    seconds = max(0, 900 - delta.total_seconds()) #take the seconds left from 300 seconds
+    seconds = max(0, training_time - delta.total_seconds()) #take the seconds left from 300 seconds
     return json.dumps({'seconds':seconds}), 200, {'ContentType':'application/json'} #return a dictionary
 
 
@@ -181,7 +206,7 @@ def testing_games_left():
     p = get_player()
     test_games = Game.query.filter_by(player_id=p.id, training_game=False)
     ############# modify the number for testing #############
-    games = max(0, 6 - test_games.count()) #calculate the number of games left
+    games = max(0, testing_games + 1 - test_games.count()) #calculate the number of games left
     return json.dumps({'games':games}), 200, {'ContentType':'application/json'} #return a dictionary
 
 
@@ -266,9 +291,9 @@ def goodbye():
     return render_template('goodbye.html')
 
 
-@app.route('/done')
-def done():
-    return render_template('done.html')
+# @app.route('/done')
+# def done():
+#     return render_template('done.html')
 
 
 ######## time the function and log into a file ######
