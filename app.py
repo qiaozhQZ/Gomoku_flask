@@ -52,27 +52,35 @@ if exists('config.yaml'):
         data = yaml.load(fin, Loader=Loader)
         training_time = data['training_time']
         testing_games = data['testing_games']
+        random_uuid = data['random_uuid']
 else:
     # numbers for launching the experiment
     training_time = 900
     testing_games = 5
+    random_uuid = True
     # write to the yaml file
     with open('config.yaml','w') as fout:
         # save the variables to the yaml file
         fout.write(yaml.dump({'training_time':training_time, 
-        'testing_games':testing_games}, Dumper=Dumper))
+        'testing_games':testing_games, 'random_uuid':random_uuid}, Dumper=Dumper))
 
 
 def get_player():
     if ('player_id' not in session or
             Player.query.filter_by(id=session['player_id']).first() is None):
-        username = str(uuid.uuid1())
-        # username = str(hash(request.remote_addr))
-        condition = choice(['immediate', 'control']) #assign into different conditions
-        # condition = 'immediate'
-        player = Player(username=username, condition=condition)
-        db.session.add(player)
-        db.session.commit()
+        if random_uuid:
+            username = str(uuid.uuid1()) # generate a random id
+        else:
+            username = str(hash(request.remote_addr)) # use the hash of IP address
+        
+        if Player.query.filter_by(username=username).count() > 0:
+            player = Player.query.filter_by(username=username).first() # get the player with a username if existed
+        else:
+            condition = choice(['immediate', 'control']) #assign into different conditions
+            # condition = 'immediate'
+            player = Player(username=username, condition=condition)
+            db.session.add(player)
+            db.session.commit()
         session['player_id'] = player.id
     else:
         player = Player.query.filter_by(id=session['player_id']).first()
@@ -157,10 +165,10 @@ def advance_stage():
     print('advance_stage')
 
     # print(request.get_json(force=True))
-    print(request.data)
-    print(request.data.decode('UTF-8'))
-    print(json.loads(request.data.decode('UTF-8'), strict=False))
-    print('beep')
+    # print(request.data)
+    # print(request.data.decode('UTF-8'))
+    # print(json.loads(request.data.decode('UTF-8'), strict=False))
+    # print('beep')
 
     p = get_player()
 
@@ -311,10 +319,12 @@ def move_player_and_opponent(i, j):
 
     move = int(i) * board.height + int(j)
     score = move_probs[move]
+    score = score / move_probs.max() # normalize
+
     board.do_move(move)
 
     player_move = Move(game=game, player_move=True, location=move, score=score,
-                       hint_location=hint, raw_move_scores=str(move_probs),
+                       hint_location=hint.item(), raw_move_scores=str(move_probs),
                        is_hint=False)
     db.session.add(player_move)
     db.session.commit()
@@ -359,15 +369,21 @@ def add_move(i, j):
         mcts_player = get_mcts_player(2)
 
     hint, move_probs = mcts_player.get_action(board, return_prob=True)
+    # print("hint_location", hint)
+    # print("hint_type", type(hint))
+    # print("hint_item_type", type(hint.item()))
+
 
     # print(move_probs)
 
     move = int(i) * board.height + int(j)
     score = move_probs[move]
+    score = score / move_probs.max() # normalize
+
     board.do_move(move)
 
     player_move = Move(game=game, player_move=human, location=move,
-                       score=score, hint_location=hint,
+                       score=score, hint_location=hint.item(),
                        raw_move_scores=str(move_probs), is_hint=False)
 
     db.session.add(player_move)
@@ -420,6 +436,8 @@ def optimal_move():
     optimal_move, move_probs = mcts_player.get_action(board, return_prob=True)
 
     score = move_probs[optimal_move]
+    score = score / move_probs.max() # normalize
+
 
     if human and game.player_is_white:
         color = 'white'
@@ -447,6 +465,8 @@ def hint():
     move, move_probs = mcts_human_hint.get_action(board, return_prob=True)
 
     score = move_probs[move]
+    score = score / move_probs.max() # normalize
+
     board.do_move(move)
 
     player_move = Move(game=game, player_move=True, location=int(move),
