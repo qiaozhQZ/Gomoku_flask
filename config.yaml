@@ -1,2 +1,3 @@
 testing_games: 1
-training_time: 10
+training_time: 60
+random_uuid: True
