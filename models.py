@@ -25,7 +25,7 @@ class Player(db.Model):
     games = db.relationship('Game', backref='player', lazy=True)
     condition = db.Column(ChoiceType(CONDITIONS))
     stage = db.Column(ChoiceType(STAGES), default='consent')
-    consent_start = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    consent_start = db.Column(db.DateTime, default=datetime.datetime.utcnow) # keep the time in utc, convert in excel
     instructions_start = db.Column(db.DateTime, default=None)
     training_start = db.Column(db.DateTime, default=None)
     testing_start = db.Column(db.DateTime, default=None)
