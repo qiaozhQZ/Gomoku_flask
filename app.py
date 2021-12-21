@@ -319,7 +319,7 @@ def move_player_and_opponent(i, j):
 
     move = int(i) * board.height + int(j)
     score = move_probs[move]
-    score = score / move_probs.max() # normalize
+    score = round(score / move_probs.max())# normalize
 
     board.do_move(move)
 
@@ -378,7 +378,7 @@ def add_move(i, j):
 
     move = int(i) * board.height + int(j)
     score = move_probs[move]
-    score = score / move_probs.max() # normalize
+    score = round(score / move_probs.max()) # normalize
 
     board.do_move(move)
 
@@ -436,7 +436,7 @@ def optimal_move():
     optimal_move, move_probs = mcts_player.get_action(board, return_prob=True)
 
     score = move_probs[optimal_move]
-    score = score / move_probs.max() # normalize
+    score = round(score / move_probs.max()) # normalize
 
 
     if human and game.player_is_white:
@@ -465,7 +465,7 @@ def hint():
     move, move_probs = mcts_human_hint.get_action(board, return_prob=True)
 
     score = move_probs[move]
-    score = score / move_probs.max() # normalize
+    score = round(score / move_probs.max()) # normalize
 
     board.do_move(move)
 
