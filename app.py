@@ -131,7 +131,7 @@ def get_mcts_player(player_index=1):
     board.init_board()
 
     size = 8
-    model_file = '../AlphaZero_Gomoku/best_policy_885_2_25300.model'
+    model_file = '../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_50.model'
 
     # for numpy
     # try:
