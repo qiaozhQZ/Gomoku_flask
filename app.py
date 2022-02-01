@@ -6,7 +6,7 @@ import datetime
 import torch
 import yaml
 from yaml import Loader, Dumper
-from random import choice
+from random import random
 from os.path import exists
 
 from flask import Flask
@@ -76,8 +76,12 @@ def get_player():
         if Player.query.filter_by(username=username).count() > 0:
             player = Player.query.filter_by(username=username).first() # get the player with a username if existed
         else:
-            condition = choice(['immediate', 'control']) #assign into different conditions
-            # condition = 'immediate'
+            # query the numer of people in each condition
+            num_imm = Player.query.filter_by(condition='immediate').count()
+            num_ctr = Player.query.filter_by(condition='control').count()
+
+            condition = sorted([(num_imm, random(), 'immediate'), 
+            (num_ctr, random(), 'control')])[0][2] #assign into different conditions to balance
             player = Player(username=username, condition=condition)
             db.session.add(player)
             db.session.commit()
@@ -131,7 +135,8 @@ def get_mcts_player(player_index=1):
     board.init_board()
 
     size = 8
-    model_file = '../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_50.model'
+    # model_file = '../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_50.model'
+    model_file = '../AlphaZero_Gomoku/Batch_5_models/5_current_policy.model'
 
     # for numpy
     # try:
