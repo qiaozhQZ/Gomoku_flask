@@ -136,7 +136,9 @@ def get_mcts_player(player_index=1):
 
     size = 8
     # model_file = '../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_50.model'
-    model_file = '../AlphaZero_Gomoku/Batch_5_models/5_current_policy.model'
+    # model_file = '../AlphaZero_Gomoku/Batch_5_models/5_current_policy.model'
+    model_file = '../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_10500.model'
+    
 
     # for numpy
     # try:
