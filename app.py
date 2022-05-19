@@ -79,9 +79,10 @@ def get_player():
             # query the numer of people in each condition
             num_imm = Player.query.filter_by(condition='immediate').count()
             num_ctr = Player.query.filter_by(condition='control').count()
+            num_dly = Player.query.filter_by(condition='delayed').count() # add delayed condition
 
             condition = sorted([(num_imm, random(), 'immediate'), 
-            (num_ctr, random(), 'control')])[0][2] #assign into different conditions to balance
+            (num_ctr, random(), 'control'), (num_ctr, random(), 'delayed')])[0][2] #assign into different conditions to balance
             player = Player(username=username, condition=condition)
             db.session.add(player)
             db.session.commit()
