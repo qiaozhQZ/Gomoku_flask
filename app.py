@@ -83,6 +83,7 @@ def get_player():
 
             condition = sorted([(num_imm, random(), 'immediate'), 
             (num_ctr, random(), 'control'), (num_ctr, random(), 'delayed')])[0][2] #assign into different conditions to balance
+            condition = "delayed"
             player = Player(username=username, condition=condition)
             db.session.add(player)
             db.session.commit()
@@ -253,6 +254,9 @@ def training():
              (move.player_move and not game.player_is_white) or
              (not move.player_move and game.player_is_white)
              else "white" for move in game.moves}
+    move_seq = [(move.location, move.score, move.hint_location, "black" if (move.player_move and not
+                 game.player_is_white) or (not move.player_move and
+                 game.player_is_white) else "white") for move in game.moves]
 
     score = None
     if len(game.moves) > 1:
@@ -264,7 +268,8 @@ def training():
         color = 'white'
 
     page = str(player.condition) + '.html'
-    return render_template(page, moves=moves, color=color,
+    print(moves)
+    return render_template(page, moves=moves, move_seq=move_seq, color=color,
                            size=game.size, score=score)
 
 

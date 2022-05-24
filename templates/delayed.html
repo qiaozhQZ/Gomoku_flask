@@ -6,7 +6,10 @@
 {% block content%}
 
 <div id="toolbar">
-    <div class='testing_text'>Dealyed feedback condition. This text is for testing only.</div>
+	<div class='score_div'><h3>Last Move Score: <span id='score'>{{ '%0.1f' | format(score|float)}}<span></h3></div>
+	<div class='comment_div'>A measure (ranging from 0-1) of how optimal your last move was
+		(1=best).</div>
+    <div class='testing_text'>Delayed feedback condition. This text is for testing only.</div>
 </div>
 
 <div id="winning_dialog">
@@ -16,6 +19,9 @@
 <!-- button always appear -->
 <div id = "new_game_control">
     <button id="new_game_button">Start new game</button>
+    <button id="previous">Previous</button>
+    <button id="hint">Hint</button>
+    <button id="next">Next</button>
 </div>
 
 <table class="board">
@@ -36,12 +42,37 @@
     </tr>
     {%endfor%}
 </table>
+
 {% endblock %}
 
 {% block footer %}
 <script>
 	let move_color = '{{ color }}';
+    var move_seq = [
+        {% for location, _, _, _ in move_seq %}
+            {{ location }},
+        {% endfor %}
+    ];
+    var color_seq = [
+        {% for _, _, _, color in move_seq %}
+            "{{ color }}",
+        {% endfor %}
+    ];
+
+    var score_seq = [
+        {% for _, score, _, _ in move_seq %}
+            {{ score }},
+        {% endfor %}
+    ];
+
+    var hint_seq = [
+        {% for _, _, hint, _ in move_seq %}
+            {{ hint }},
+        {% endfor %}
+    ];
+    var current_idx = move_seq.length-1;
 </script>
 <script src="game.js"></script>
 <script src="training.js"></script>
+<script src="delayed.js"></script>
 {% endblock %}

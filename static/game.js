@@ -81,6 +81,7 @@ $().ready(function(){
 	});
 
 	function display_winner(winner){
+        $(document).trigger('game_end');
 		disable_clicking();
 		$('#toolbar').hide();
 		$('#winning_dialog').show();
