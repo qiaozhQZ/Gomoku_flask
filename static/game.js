@@ -82,6 +82,7 @@ $().ready(function(){
 			contentType: "application/json",
 			dataType: 'json',
 			success: function(resp) {
+                $(document).trigger('new_game');
 				clear_board();
 				$('#toolbar').show();
 				$('#winning_dialog').hide();

@@ -76,6 +76,10 @@ $().ready(function(){
         }
     });
 
+    $(document).on("new_game", function() {
+        disable_review();
+    });
+
     $(document).on("game_end", function() {
         enable_review();
     });
