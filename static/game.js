@@ -22,6 +22,7 @@ $().ready(function(){
 
 			$.post('move/' + row + '/' + col)
 				.done(function(data){
+                    $(document).trigger('move_complete', data);
 					console.log('your move:');
 					console.log(data);
 					$('#score').html(data['score']);
@@ -39,6 +40,7 @@ $().ready(function(){
 
 							$.post('move/' + data['i'] + '/' + data['j'])
 								.done(function(data){
+                                    $(document).trigger('move_complete', data);
 									console.log('opp move done');
 									console.log(data);
 									enable_clicking();
@@ -60,6 +62,14 @@ $().ready(function(){
 				$('#loc'+data['location']).addClass('hintstone');	
 				enable_clicking();
 			});
+            $.ajax({
+                    type: "POST",
+                    url: '/log',
+                    data: JSON.stringify({'event':'previous'}),
+                    contentType: "application/json",
+                    dataType: 'json',
+                    success: function(resp) {},
+            });
 		}
 	});
 
@@ -78,6 +88,15 @@ $().ready(function(){
 				enable_clicking();
 			},
 		});
+
+        $.ajax({
+                type: "POST",
+                url: '/log',
+                data: JSON.stringify({'event':'previous'}),
+                contentType: "application/json",
+                dataType: 'json',
+                success: function(resp) {},
+        });
 	});
 
 	function display_winner(winner){

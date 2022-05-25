@@ -1,22 +1,13 @@
 function disable_review(){
     console.log('disable?');
-    $('#previous').hide()
-    $('#hint').hide()
-    $('#next').hide()
-    $('.score_div').hide()
-    $('.comment_div').hide()
+    $('#review').hide()
 }
 
 function enable_review(){
-    $('#previous').show()
-    $('#hint').show()
-    $('#next').show()
-    $('.score_div').show()
-    $('.comment_div').show()
+    $('#review').show()
 }
 
 $().ready(function(){
-
 
     disable_review();
 
@@ -32,6 +23,15 @@ $().ready(function(){
             else{
                 $('#score').html('--');
             }
+
+            $.ajax({
+                    type: "POST",
+                    url: '/log',
+                    data: JSON.stringify({'event':'previous'}),
+                    contentType: "application/json",
+                    dataType: 'json',
+                    success: function(resp) {},
+            });
         }
     }
 
@@ -41,38 +41,51 @@ $().ready(function(){
             current_idx += 1;
             $('#loc' + move_seq[current_idx]).addClass(color_seq[current_idx] + "stone");
             $('#score').html(score_seq[current_idx]);
+
+            $.ajax({
+                    type: "POST",
+                    url: '/log',
+                    data: JSON.stringify({'event':'next'}),
+                    contentType: "application/json",
+                    dataType: 'json',
+                    success: function(resp) {},
+            });
         }
     }
     
     $('#previous').click(function(){
         prev_move();
-        /*
-        while (color_seq[current_idx] != "white" && current_idx > 0){
-            prev_move();
-        }
-        */
     });
 
     $('#next').click(function(){
         next_move();
-        /*
-        while (color_seq[current_idx] != "white" && current_idx < move_seq.length - 1){
-            next_move();
-        }
-        */
     });
 
     $('#hint').click(function(){
-        console.log('beep')
         if (current_idx < move_seq.length - 1){
             $('.hintstone').removeClass('hintstone');	
             $('#loc'+hint_seq[current_idx+1]).addClass('hintstone');	
+            $.ajax({
+                    type: "POST",
+                    url: '/log',
+                    data: JSON.stringify({'event':'next'}),
+                    contentType: "application/json",
+                    dataType: 'json',
+                    success: function(resp) {},
+            });
         }
     });
 
     $(document).on("game_end", function() {
-        console.log('triggered!');
         enable_review();
+    });
+
+    $(document).on("move_complete", function(ev, data){
+        move_seq.push(data['move']);
+        color_seq.push(data['color']);
+        score_seq.push(data['score']);
+        hint_seq.push(data['hint']);
+        current_idx += 1;
     });
 
 });

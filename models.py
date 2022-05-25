@@ -77,3 +77,11 @@ class Move(db.Model):
             white = True
         return '<Move: {} (game={}, player={}, white={}, loc={}, score={})>'.format(
             self.id, self.game_id, self.player_move, white, self.location, self.score)
+
+
+class Log(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    game_id = db.Column(db.Integer, db.ForeignKey('game.id'), nullable=False)
+    time = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    event = db.Column(db.Text, nullable=True)
+

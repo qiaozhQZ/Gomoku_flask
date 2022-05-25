@@ -21,6 +21,7 @@ from models import db
 from models import Player
 from models import Game
 from models import Move
+from models import Log
 
 sys.path.append('../AlphaZero_Gomoku')
 
@@ -98,8 +99,8 @@ def redirect_player(player, cur_page):
         # redirect user to the stage they should be on
         return redirect('/{}'.format(player.stage))
     
-    print(player.stage)
-    print(cur_page)
+    # print(player.stage)
+    # print(cur_page)
 
 
 def get_game(player):
@@ -152,7 +153,7 @@ def get_mcts_player(player_index=1):
 
     use_gpu = torch.cuda.is_available()
     # use_gpu = False
-    print('using GPU: ', use_gpu)
+    # print('using GPU: ', use_gpu)
 
     best_policy = PolicyValueNet(size, size, model_file = model_file, use_gpu=use_gpu)
     mcts_player = MCTSPlayer(best_policy.policy_value_fn, c_puct=5,
@@ -171,7 +172,7 @@ def new_game():
 @app.route('/advance_stage', methods = ['POST']) #only accepting 'POST'
 def advance_stage():
     '''automatically direct to the correct page'''
-    print('advance_stage')
+    # print('advance_stage')
 
     # print(request.get_json(force=True))
     # print(request.data)
@@ -386,7 +387,6 @@ def add_move(i, j):
     # print("hint_type", type(hint))
     # print("hint_item_type", type(hint.item()))
 
-
     # print(move_probs)
 
     move = int(i) * board.height + int(j)
@@ -418,8 +418,19 @@ def add_move(i, j):
     else:
         color = 'black'
 
-    return {'end': end, 'winner': winner, 'score': score, 'color': color}
+    return {'end': end, 'winner': winner, 'score': score, 'color': color,
+            'move': move, 'hint': hint.item()}
 
+@app.route('/log/', methods=['POST'])
+def log():
+    event = request.get_json()['event']
+    player = get_player()
+    game = get_game(player)
+    logged_event = Log(game_id=game.id, event=event)
+    db.session.add(logged_event)
+    db.session.commit()
+
+    return jsonify({'success': True})
 
 @app.route('/move/<i>/<j>', methods=['GET', 'POST'])
 def make_move(i, j):
@@ -450,7 +461,6 @@ def optimal_move():
 
     score = move_probs[optimal_move]
     score = round(score / move_probs.max()) # normalize
-
 
     if human and game.player_is_white:
         color = 'white'

@@ -5,13 +5,6 @@
 
 {% block content%}
 
-<div id="toolbar">
-	<div class='score_div'><h3>Last Move Score: <span id='score'>{{ '%0.1f' | format(score|float)}}<span></h3></div>
-	<div class='comment_div'>A measure (ranging from 0-1) of how optimal your last move was
-		(1=best).</div>
-    <div class='testing_text'>Delayed feedback condition. This text is for testing only.</div>
-</div>
-
 <div id="winning_dialog">
 	<h3 id="winning_text">You Won!</h3>	
 </div>
@@ -19,10 +12,28 @@
 <!-- button always appear -->
 <div id = "new_game_control">
     <button id="new_game_button">Start new game</button>
+</div>
+
+<div id="toolbar">
+    <div>Once you complete the game, you can review each move in the game and
+        get feedback on move score and hints from the AI model.</div>
+</div>
+
+<div id="review">
+    <h2>Game Review Mode</h2>
+    <div>You can now review your game (go forward and backwards through moves)
+        and look at the estimated score for each move as well as request
+        hints for the best move in each board state. </div>
+	<div class='score_div'><h3>Move Score: <span id='score'>{{ '%0.1f' | format(score|float)}}<span></h3></div>
+	<div class='comment_div'>A measure (ranging from 0-1) of how optimal your last move was
+		(1=best).</div>
+
     <button id="previous">Previous</button>
     <button id="hint">Hint</button>
     <button id="next">Next</button>
 </div>
+
+
 
 <table class="board">
     {%for i in range(0, size)%}
