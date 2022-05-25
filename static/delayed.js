@@ -78,6 +78,11 @@ $().ready(function(){
 
     $(document).on("new_game", function() {
         disable_review();
+        move_seq = [];
+        color_seq = [];
+        score_seq = [];
+        hint_seq = [];
+        current_idx = -1;
     });
 
     $(document).on("game_end", function() {
