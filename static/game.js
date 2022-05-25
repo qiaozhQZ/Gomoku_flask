@@ -154,6 +154,7 @@ $().ready(function(){
 		$('.blackstone').addClass('make_location').addClass('make_clickable').removeClass('blackstone');
 		$('.whitestone').addClass('make_location').addClass('make_clickable').removeClass('whitestone');
 		$('.hintstone').removeClass('hintstone');
+        move_color = "black";
 	}
 
 	if (move_color == "white"){
