@@ -15,22 +15,22 @@
 </div>
 
 <div id="toolbar">
-    <div>Once you complete the game, you can review each move in the game and
-        get feedback on move score and hints from the AI model.</div>
+    <div>Once you complete the game, you can review each move in the game <br>
+        and get feedback on move score and hints from the AI model.</div>
 </div>
 
 <div id="review">
     <h2>Game Review Mode</h2>
-    <div>You can now review your game (go forward and backwards through moves)
-        and look at the estimated score for each move as well as request
+    <div>You can now review your game (go forward and backwards through moves) <br>
+        and look at the estimated score for each move as well as request <br>
         hints for the best move in each board state. </div>
 	<div class='score_div'><h3>Move Score: <span id='score'>{{ '%0.1f' | format(score|float)}}<span></h3></div>
 	<div class='comment_div'>A measure (ranging from 0-1) of how optimal your last move was
 		(1=best).</div>
 
-    <button id="previous">Previous</button>
+    <div id = "review_buttons"><button id="previous">Previous</button>
     <button id="hint">Hint</button>
-    <button id="next">Next</button>
+    <button id="next">Next</button></div>
 </div>
 
 
