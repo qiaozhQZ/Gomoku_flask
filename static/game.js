@@ -154,8 +154,8 @@ $().ready(function(){
 	}
 
 	function clear_board(){
-		$('.blackstone').addClass('make_location').addClass('make_clickable').removeClass('blackstone');
-		$('.whitestone').addClass('make_location').addClass('make_clickable').removeClass('whitestone');
+		$('.blackstone').addClass('move_location').addClass('make_clickable').removeClass('blackstone');
+		$('.whitestone').addClass('move_location').addClass('make_clickable').removeClass('whitestone');
 		$('.hintstone').removeClass('hintstone');
         move_color = "black";
 	}
