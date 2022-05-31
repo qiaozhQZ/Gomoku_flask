@@ -5,6 +5,27 @@ $().ready(function(){
 	
 	enable_clicking();
 
+    function make_ai_move(){
+        $.post('optimal_move').done(function(data){
+            console.log('opponent move:');
+            console.log(data);
+            $('#loc'+data['location']).removeClass('move_location');	
+            $('#loc'+data['location']).addClass(move_color + 'stone');	
+            flip_color()
+
+            $.post('move/' + data['i'] + '/' + data['j'])
+                .done(function(data){
+                    $(document).trigger('move_complete', data);
+                    console.log('opp move done');
+                    console.log(data);
+                    enable_clicking();
+                    if (data['end']){
+                        display_winner(data['winner']);
+                    }
+                });
+        });
+    }
+
     function click_handler(e){
 		if (clickable){
 			disable_clicking();
@@ -32,24 +53,7 @@ $().ready(function(){
 						display_winner(data['winner']);
 					}
 					else{
-						$.post('optimal_move').done(function(data){
-							console.log('opponent move:');
-							console.log(data);
-							$('#loc'+data['location']).removeClass('move_location');	
-							$('#loc'+data['location']).addClass(move_color + 'stone');	
-							flip_color()
-
-							$.post('move/' + data['i'] + '/' + data['j'])
-								.done(function(data){
-                                    $(document).trigger('move_complete', data);
-									console.log('opp move done');
-									console.log(data);
-									enable_clicking();
-									if (data['end']){
-										display_winner(data['winner']);
-									}
-								});
-						});
+					    make_ai_move();	
 					}
 				});
 		}
@@ -162,22 +166,7 @@ $().ready(function(){
 
 	if (move_color == "white"){
 		disable_clicking();
-		$.post('optimal_move').done(function(data){
-			console.log('opponent move:');
-			console.log(data);
-			$('#loc'+data['location']).removeClass('move_location');	
-			$('#loc'+data['location']).addClass(move_color + 'stone');	
-			flip_color()
-
-			$.post('move/' + data['i'] + '/' + data['j']).done(function(data){
-				console.log('opp move done');
-				console.log(data);
-				enable_clicking();
-				if (data['end']){
-					display_winner(data['winner']);
-				}
-			});
-		});
+        make_ai_move();
 	}
 
 });
