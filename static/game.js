@@ -5,7 +5,7 @@ $().ready(function(){
 	
 	enable_clicking();
 
-	$('.move_location').click(function(e){
+    function click_handler(e){
 		if (clickable){
 			disable_clicking();
 			$('.hintstone').removeClass('hintstone');	
@@ -15,6 +15,7 @@ $().ready(function(){
 			let col = $(square).attr('data-col');
 
 			$('#score').html('--');
+            $(square).off('click')
 			$(square).removeClass('move_location');	
 			$(square).addClass(move_color + 'stone');	
 
@@ -52,7 +53,7 @@ $().ready(function(){
 					}
 				});
 		}
-	});
+	}
 
 	$('#hint_button').click(function(e){
 		if (clickable){
@@ -142,12 +143,14 @@ $().ready(function(){
 		clickable = true;
 		$('.move_location').addClass('make_clickable');
 		$('#hint_button').removeAttr('disabled');
+        $('.move_location').click(click_handler);
 	}
 
 	function disable_clicking(){
 		clickable = false;
 		$('.move_location').removeClass('make_clickable');
 		$('#hint_button').attr('disabled','disabled');
+        $('.move_location').off('click', click_handler);
 	}
 
 	function clear_board(){
