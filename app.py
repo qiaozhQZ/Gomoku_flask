@@ -84,7 +84,7 @@ def get_player():
 
             condition = sorted([(num_imm, random(), 'immediate'), 
             (num_ctr, random(), 'control'), (num_ctr, random(), 'delayed')])[0][2] #assign into different conditions to balance
-            condition = "delayed"
+            # condition = "immediate"
             player = Player(username=username, condition=condition)
             db.session.add(player)
             db.session.commit()
