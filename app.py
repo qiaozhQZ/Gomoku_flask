@@ -151,8 +151,8 @@ def get_mcts_player(player_index=1):
 
     # best_policy = PolicyValueNetNumpy(size, size, policy_param)
 
-    use_gpu = torch.cuda.is_available()
-    # use_gpu = False
+    # use_gpu = torch.cuda.is_available()
+    use_gpu = False
     # print('using GPU: ', use_gpu)
 
     best_policy = PolicyValueNet(size, size, model_file = model_file, use_gpu=use_gpu)
