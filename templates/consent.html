@@ -106,6 +106,18 @@ By accepting below you agree to the following statements:</p>
 
 <script>
 $(function() {
+	
+	window.addEventListener( "pageshow", function ( event ) {
+		var historyTraversal = event.persisted || 
+							   ( typeof window.performance != "undefined" && 
+								window.performance.getEntriesByType("navigation")[0].type === "back_forward"
+							   );
+		if ( historyTraversal ) {
+		  // Handle page restore.
+		  window.location.reload();
+		}
+	  });
+
     console.log( "ready!" ); //wait until all pages load
     $('#agree_button').click(function() {
         $.ajax({
