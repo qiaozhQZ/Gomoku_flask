@@ -3,7 +3,20 @@ let num_games_left = 99999;
 
 $().ready(function(){
 	
+	window.addEventListener( "pageshow", function ( event ) {
+		var historyTraversal = event.persisted || 
+							   ( typeof window.performance != "undefined" && 
+								window.performance.getEntriesByType("navigation")[0].type === "back_forward"
+							   );
+		if ( historyTraversal ) {
+		  // Handle page restore.
+		  window.location.reload();
+		}
+	  });
+	  
+
 	enable_clicking();
+	// $('#next_button').hide();
 
     function make_ai_move(){
         $.post('optimal_move').done(function(data){
@@ -120,6 +133,7 @@ $().ready(function(){
 			$('#winning_text').text('Draw Game!');
 		}
 		num_games_left -= 1; //count down the games left
+
 		if (num_games_left < 1) { //advance to survey if no games left
 			$.ajax({
 				type: "POST",
@@ -128,7 +142,11 @@ $().ready(function(){
 				contentType: "application/json",
 				dataType: 'json',
 				success: function(resp) {
-					window.location.href = resp['next_page']; 
+					$('#new_game_button').hide();
+					$('#next_button').click(function() {
+						window.location.href = resp['next_page'];
+					});
+					$('#next_button').show(); 
 				},
 			});
 		}
