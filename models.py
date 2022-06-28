@@ -1,6 +1,7 @@
 import datetime
 
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import UniqueConstraint
 from sqlalchemy_utils.types.choice import ChoiceType
 
 db = SQLAlchemy()
@@ -85,3 +86,13 @@ class Log(db.Model):
     time = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     event = db.Column(db.Text, nullable=True)
 
+
+class MctsCache(db.Model):
+    __table_args__ = (
+        UniqueConstraint("board", "human"),
+    )
+    id = db.Column(db.Integer, primary_key=True)
+    board = db.Column(db.Text, nullable=False)
+    human = db.Column(db.Boolean, nullable=False)
+    move = db.Column(db.Integer, nullable=False)
+    scores = db.Column(db.Text, nullable=False)
