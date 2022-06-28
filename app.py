@@ -8,6 +8,7 @@ import yaml
 from yaml import Loader, Dumper
 from random import random
 from os.path import exists
+from functools import cache
 
 from flask import Flask
 from flask import render_template
@@ -16,12 +17,14 @@ from flask import session
 from flask import send_from_directory
 from flask import jsonify
 from flask import request
+import numpy as np
 
 from models import db
 from models import Player
 from models import Game
 from models import Move
 from models import Log
+from models import MctsCache
 
 sys.path.append('../AlphaZero_Gomoku')
 
@@ -99,8 +102,9 @@ def redirect_player(player, cur_page):
         # redirect user to the stage they should be on
         return redirect('/{}'.format(player.stage))
     
-    # print(player.stage)
-    # print(cur_page)
+    print('stage', player.stage)
+    print('page', cur_page)
+    print()
 
 
 def get_game(player):
@@ -141,6 +145,11 @@ def get_mcts_player(player_index=1):
     # model_file = '../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_50.model'
     # model_file = '../AlphaZero_Gomoku/Batch_5_models/5_current_policy.model'
     model_file = '../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_10500.model'
+    model_1 = '../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_50.model'
+    model_2 = '../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_600.model'
+    model_3 = '../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_3000.model'
+    model_4 = '../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_5200.model'
+    model_5 = '../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_10500.model'
     
 
     # for numpy
@@ -156,6 +165,12 @@ def get_mcts_player(player_index=1):
     # print('using GPU: ', use_gpu)
 
     best_policy = PolicyValueNet(size, size, model_file = model_file, use_gpu=use_gpu)
+    # policy_1 = 
+    # policy_2 = 
+    # policy_3 = 
+    # policy_4 = 
+    # policy_5 = 
+
     mcts_player = MCTSPlayer(best_policy.policy_value_fn, c_puct=5,
                              n_playout=200) # modify n_playout to make easier models
     mcts_player.set_player_ind(player_index)
@@ -305,8 +320,9 @@ def survey():
     r = redirect_player(get_player(), 'survey')
     if r is not None:
         return r
-    return render_template('survey.html')
-
+    p = get_player()
+    # sent the participant id to Qualtrics
+    return redirect('https://drexel.qualtrics.com/jfe/form/SV_ewWFeWkDV9uHMtE?participant_id={}'.format(p.id))
 
 @app.route('/goodbye')
 def goodbye():
@@ -324,10 +340,8 @@ def move_player_and_opponent(i, j):
     game = get_game(player)
 
     board = get_board(game)
-    mcts_player = get_mcts_player(2)
-    mcts_human_hint = get_mcts_player(1)
 
-    hint, move_probs = mcts_human_hint.get_action(board, return_prob=True)
+    hint, move_probs = compute_mcts_move(True, board) # human is True
 
     # print(move_probs)
 
@@ -338,7 +352,7 @@ def move_player_and_opponent(i, j):
     board.do_move(move)
 
     player_move = Move(game=game, player_move=True, location=move, score=score,
-                       hint_location=hint.item(), raw_move_scores=str(move_probs),
+                       hint_location=hint, raw_move_scores=str(move_probs),
                        is_hint=False)
     db.session.add(player_move)
     db.session.commit()
@@ -352,7 +366,7 @@ def move_player_and_opponent(i, j):
         session.pop('game_id', None)
         return redirect("/", code=302)
 
-    move = mcts_player.get_action(board)
+    move, _ = compute_mcts_move(False, board) # do not need probability
     board.do_move(move)
 
     opponent_move = Move(game=game, player_move=False, location=int(move))
@@ -377,12 +391,7 @@ def add_move(i, j):
 
     board = get_board(game)
 
-    if human:
-        mcts_player = get_mcts_player(1)
-    else:
-        mcts_player = get_mcts_player(2)
-
-    hint, move_probs = mcts_player.get_action(board, return_prob=True)
+    hint, move_probs = compute_mcts_move(human, board)
     # print("hint_location", hint)
     # print("hint_type", type(hint))
     # print("hint_item_type", type(hint.item()))
@@ -396,7 +405,7 @@ def add_move(i, j):
     board.do_move(move)
 
     player_move = Move(game=game, player_move=human, location=move,
-                       score=score, hint_location=hint.item(),
+                       score=score, hint_location=hint,
                        raw_move_scores=str(move_probs), is_hint=False)
 
     db.session.add(player_move)
@@ -419,7 +428,7 @@ def add_move(i, j):
         color = 'black'
 
     return {'end': end, 'winner': winner, 'score': score, 'color': color,
-            'move': move, 'hint': hint.item()}
+            'move': move, 'hint': hint}
 
 @app.route('/log/', methods=['POST'])
 def log():
@@ -441,6 +450,35 @@ def make_move(i, j):
         return redirect("/", code=302)
 
 
+def compute_mcts_move(human, board):
+    
+    c = MctsCache.query.filter_by(human=human, board=json.dumps(board.states, sort_keys=True)).first()
+    # c = MctsCache.query.filter_by(human=human, board=str(board.current_state())).first()
+    if c is None:
+
+        print('computing MCTS move')
+
+        if human:
+            mcts_player = get_mcts_player(1)
+        else:
+            mcts_player = get_mcts_player(2)
+
+        move, scores = mcts_player.get_action(board, return_prob=True)
+        print('score type: ', scores.dtype)
+        c = MctsCache(human=human, board=json.dumps(board.states, sort_keys=True), move=move.item(), scores=scores.tobytes())
+        
+        print('human: ', c.human)
+        print('board: ', c.board)
+        print('move: ', c.move)
+        
+        db.session.add(c) # save to the database
+        db.session.commit()
+    move = c.move
+    scores = np.frombuffer(c.scores, dtype=np.float64)
+
+    return move, scores
+    
+
 @app.route('/optimal_move', methods=['POST'])
 def optimal_move():
     player = get_player()
@@ -452,12 +490,7 @@ def optimal_move():
 
     board = get_board(game)
 
-    if human:
-        mcts_player = get_mcts_player(1)
-    else:
-        mcts_player = get_mcts_player(2)
-
-    optimal_move, move_probs = mcts_player.get_action(board, return_prob=True)
+    optimal_move, move_probs = compute_mcts_move(human, board)
 
     score = move_probs[optimal_move]
     score = round(score / move_probs.max()) # normalize
@@ -482,10 +515,8 @@ def hint():
     game = get_game(player)
 
     board = get_board(game)
-    mcts_player = get_mcts_player(2)
-    mcts_human_hint = get_mcts_player(1)
 
-    move, move_probs = mcts_human_hint.get_action(board, return_prob=True)
+    move, move_probs = compute_mcts_move(True, board) # human hint, true
 
     score = move_probs[move]
     score = round(score / move_probs.max()) # normalize
@@ -504,7 +535,7 @@ def hint():
         session.pop('game_id', None)
         return redirect("/", code=302)
 
-    move = mcts_player.get_action(board)
+    move, _ = compute_mcts_move(False, board) # not human
     board.do_move(move)
 
     opponent_move = Move(game=game, player_move=False, location=int(move))
