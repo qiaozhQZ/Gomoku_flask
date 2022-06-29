@@ -112,7 +112,16 @@ def get_game(player):
             Game.query.filter_by(id=session['game_id'],
                                  player_won=None).first() is None):
         is_testing = player.stage == 'testing'
-        game = Game(player=player, player_is_white=False, training_game=not is_testing)
+
+        if is_testing:
+            num_test_games = Game.query.filter_by(player=player, training_game=False).count()
+            game = Game(player=player, player_is_white=False, training_game=not is_testing, game_difficulty=num_test_games%5)
+            
+        else:
+            game = Game(player=player, player_is_white=False, training_game=not is_testing, game_difficulty=4)
+        
+        print("game difficulty", game.game_difficulty)
+
         db.session.add(game)
         db.session.commit()
         session['game_id'] = game.id
@@ -132,24 +141,28 @@ def get_board(game):
     return board
 
 
-def get_mcts_player(player_index=1):
+def get_mcts_player(player_index=1, difficulty=4):
     """
     Get an mcts player, an index of 1 corresponds to first player (typically
     human) and an index of 2 corresponds to the second player (typically AI
     opponent).
     """
+    if difficulty < 0 or difficulty > 4:
+        raise ValueError('Difficulty must be between 0 and 4.')
+
     board = Board()
     board.init_board()
 
     size = 8
     # model_file = '../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_50.model'
     # model_file = '../AlphaZero_Gomoku/Batch_5_models/5_current_policy.model'
-    model_file = '../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_10500.model'
-    model_1 = '../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_50.model'
-    model_2 = '../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_600.model'
-    model_3 = '../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_3000.model'
-    model_4 = '../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_5200.model'
-    model_5 = '../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_10500.model'
+    # model_file = '../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_10500.model'
+    model_dict = {'0':'../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_50.model',
+    '1':'../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_600.model',
+    '2':'../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_3000.model',
+    '3':'../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_5200.model',
+    '4':'../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_10500.model'}
+    model_file = model_dict[str(difficulty)]
     
 
     # for numpy
@@ -341,7 +354,7 @@ def move_player_and_opponent(i, j):
 
     board = get_board(game)
 
-    hint, move_probs = compute_mcts_move(True, board) # human is True
+    hint, move_probs = compute_mcts_move(True, board, difficulty=game.game_difficulty) # human is True
 
     # print(move_probs)
 
@@ -366,7 +379,7 @@ def move_player_and_opponent(i, j):
         session.pop('game_id', None)
         return redirect("/", code=302)
 
-    move, _ = compute_mcts_move(False, board) # do not need probability
+    move, _ = compute_mcts_move(False, board, difficulty=game.game_difficulty) # do not need probability
     board.do_move(move)
 
     opponent_move = Move(game=game, player_move=False, location=int(move))
@@ -391,7 +404,7 @@ def add_move(i, j):
 
     board = get_board(game)
 
-    hint, move_probs = compute_mcts_move(human, board)
+    hint, move_probs = compute_mcts_move(human, board, difficulty=game.game_difficulty)
     # print("hint_location", hint)
     # print("hint_type", type(hint))
     # print("hint_item_type", type(hint.item()))
@@ -450,26 +463,27 @@ def make_move(i, j):
         return redirect("/", code=302)
 
 
-def compute_mcts_move(human, board):
+def compute_mcts_move(human, board, difficulty=4):
     
-    c = MctsCache.query.filter_by(human=human, board=json.dumps(board.states, sort_keys=True)).first()
+    c = MctsCache.query.filter_by(human=human, board=json.dumps(board.states, sort_keys=True), difficulty=difficulty).first()
     # c = MctsCache.query.filter_by(human=human, board=str(board.current_state())).first()
     if c is None:
 
         print('computing MCTS move')
 
         if human:
-            mcts_player = get_mcts_player(1)
+            mcts_player = get_mcts_player(1, difficulty=difficulty)
         else:
-            mcts_player = get_mcts_player(2)
+            mcts_player = get_mcts_player(2, difficulty=difficulty)
 
         move, scores = mcts_player.get_action(board, return_prob=True)
         print('score type: ', scores.dtype)
-        c = MctsCache(human=human, board=json.dumps(board.states, sort_keys=True), move=move.item(), scores=scores.tobytes())
+        c = MctsCache(human=human, board=json.dumps(board.states, sort_keys=True), difficulty=difficulty, move=move.item(), scores=scores.tobytes())
         
         print('human: ', c.human)
         print('board: ', c.board)
         print('move: ', c.move)
+        print('difficulty: ', c.difficulty)
         
         db.session.add(c) # save to the database
         db.session.commit()
@@ -490,7 +504,7 @@ def optimal_move():
 
     board = get_board(game)
 
-    optimal_move, move_probs = compute_mcts_move(human, board)
+    optimal_move, move_probs = compute_mcts_move(human, board, difficulty=game.game_difficulty)
 
     score = move_probs[optimal_move]
     score = round(score / move_probs.max()) # normalize
@@ -516,7 +530,7 @@ def hint():
 
     board = get_board(game)
 
-    move, move_probs = compute_mcts_move(True, board) # human hint, true
+    move, move_probs = compute_mcts_move(True, board, difficulty=game.game_difficulty) # human hint, true
 
     score = move_probs[move]
     score = round(score / move_probs.max()) # normalize
@@ -535,7 +549,7 @@ def hint():
         session.pop('game_id', None)
         return redirect("/", code=302)
 
-    move, _ = compute_mcts_move(False, board) # not human
+    move, _ = compute_mcts_move(False, board, difficulty=game.game_difficulty) # not human
     board.do_move(move)
 
     opponent_move = Move(game=game, player_move=False, location=int(move))
