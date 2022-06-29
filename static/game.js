@@ -19,24 +19,31 @@ $().ready(function(){
 	// $('#next_button').hide();
 
     function make_ai_move(){
-        $.post('optimal_move').done(function(data){
-            console.log('opponent move:');
-            console.log(data);
-            $('#loc'+data['location']).removeClass('move_location');	
-            $('#loc'+data['location']).addClass(move_color + 'stone');	
-            flip_color()
+		if (move_color == 'white') {
+			$.post('optimal_move').done(function(data){
+				console.log('opponent move:');
+				console.log(data);
+				$('#loc'+data['location']).removeClass('move_location');	
+				$('#loc'+data['location']).addClass(move_color + 'stone');	
+				flip_color()
+	
+				$.post('move/' + data['i'] + '/' + data['j'])
+					.done(function(data){
+						$(document).trigger('move_complete', data);
+						console.log('opp move done');
+						console.log(data);
+						enable_clicking();
+						if (data['end']){
+							display_winner(data['winner']);
+						}
+					});
+			});
+		}
 
-            $.post('move/' + data['i'] + '/' + data['j'])
-                .done(function(data){
-                    $(document).trigger('move_complete', data);
-                    console.log('opp move done');
-                    console.log(data);
-                    enable_clicking();
-                    if (data['end']){
-                        display_winner(data['winner']);
-                    }
-                });
-        });
+		else {
+			enable_clicking()
+		}
+        
     }
 
     function click_handler(e){
