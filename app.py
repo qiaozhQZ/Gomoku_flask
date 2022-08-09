@@ -327,10 +327,14 @@ def testing():
     return render_template(page, moves=moves, color=color,
                            size=game.size, score=score)
 
-@app.route('/viz/<id>')
-def viz(id):
+@app.route('/viz/<game_id>')
+def viz(game_id):
 
-    game = Game.query.filter_by(id=id).first()
+    print(game_id)
+    game = Game.query.filter_by(id=int(game_id)).first()
+    print("GAME")
+    print(game)
+    print("END")
     moves = {move.location: "black" if
              (move.player_move and not game.player_is_white) or
              (not move.player_move and game.player_is_white)

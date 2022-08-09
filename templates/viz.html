@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}Home{% endblock %}
+{% block head %}
+    <link rel="stylesheet" href="../style.css" type="text/css">
+    <script src="../jquery-3.6.0.min.js"></script>
+    <title>{% block title %}Gomoku{% endblock %}</title>
+{% endblock %}
 {% block heading %}Gomoku Training{% endblock %}
 
 {% block content%}
@@ -10,19 +14,6 @@
 </div>
 
 <!-- button always appear -->
-
-<div id = "start_instructions">
-    <div>You can start making a move by clicking on any grid.</div>
-</div>
-
-<div id = "new_game_control">
-    <button id="new_game_button">Start new game</button>
-</div>
-
-<div id="toolbar">
-    <div>Once you complete the game, you can review each move in the game <br>
-        and get feedback on move score and hints from the AI model.</div>
-</div>
 
 <div id="review">
     <h2>Game Review Mode</h2>
@@ -88,7 +79,7 @@
     ];
     var current_idx = move_seq.length-1;
 </script>
-<script src="game.js"></script>
-<script src="training.js"></script>
-<script src="viz.js"></script>
+<script src="../game.js"></script>
+<script src="../training.js"></script>
+<script src="../viz.js"></script>
 {% endblock %}
