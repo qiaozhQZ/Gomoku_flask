@@ -327,6 +327,31 @@ def testing():
     return render_template(page, moves=moves, color=color,
                            size=game.size, score=score)
 
+@app.route('/viz/<id>')
+def viz(id):
+
+    game = Game.query.filter_by(id=id).first()
+    moves = {move.location: "black" if
+             (move.player_move and not game.player_is_white) or
+             (not move.player_move and game.player_is_white)
+             else "white" for move in game.moves}
+    move_seq = [(move.location, move.score, move.hint_location, "black" if (move.player_move and not
+                 game.player_is_white) or (not move.player_move and
+                 game.player_is_white) else "white") for move in game.moves]
+
+    score = None
+    if len(game.moves) > 1:
+        score = game.moves[-2].score
+
+    if len(moves) % 2 == 0:
+        color = 'black'
+    else:
+        color = 'white'
+
+    page = 'viz.html'
+    print(moves)
+    return render_template(page, moves=moves, move_seq=move_seq, color=color,
+                           size=game.size, score=score)
 
 @app.route('/survey')
 def survey():
