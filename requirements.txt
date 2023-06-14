@@ -1,2 +1,4 @@
+uwsgi
+pyymal
 flask-sqlalchemy
 sqlalchemy_utils
