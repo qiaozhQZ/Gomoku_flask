@@ -157,11 +157,11 @@ def get_mcts_player(player_index=1, difficulty=4):
     # model_file = '../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_50.model'
     # model_file = '../AlphaZero_Gomoku/Batch_5_models/5_current_policy.model'
     # model_file = '../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_10500.model'
-    model_dict = {'0':'../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_50.model',
-    '1':'../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_600.model',
-    '2':'../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_3000.model',
-    '3':'../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_5200.model',
-    '4':'../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_10500.model'}
+    model_dict = {'0':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_50.model',
+    '1':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_600.model',
+    '2':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_3000.model',
+    '3':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_5200.model',
+    '4':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_10500.model'}
     model_file = model_dict[str(difficulty)]
     
 
@@ -505,7 +505,8 @@ def compute_mcts_move(human, board, difficulty=4):
         else:
             mcts_player = get_mcts_player(2, difficulty=difficulty)
 
-        move, scores = mcts_player.get_action(board, return_prob=True)
+        #TODO SET TEMP
+        move, scores = mcts_player.get_action(board, temp=10, return_prob=True)
         print('score type: ', scores.dtype)
         c = MctsCache(human=human, board=json.dumps(board.states, sort_keys=True), difficulty=difficulty, move=move.item(), scores=scores.tobytes())
         
