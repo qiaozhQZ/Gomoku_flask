@@ -59,7 +59,7 @@ if exists('config.yaml'):
         random_uuid = data['random_uuid']
 else:
     # numbers for launching the experiment
-    training_time = 900
+    training_time = 1200
     testing_games = 5
     random_uuid = True
     # write to the yaml file
@@ -224,7 +224,7 @@ def advance_stage():
 
     if p.stage == 'survey':
         # senf the participant id to Qualtrics
-        return json.dumps({'next_page':'https://drexel.qualtrics.com/jfe/form/SV_ewWFeWkDV9uHMtE?participant_id={}'.format(p.id)}), 200, {'ContentType':'application/json'}
+        return json.dumps({'next_page':'https://gatech.co1.qualtrics.com/jfe/form/SV_6PUWBRnlpQheP6C?participant_id={}'.format(p.id)}), 200, {'ContentType':'application/json'}
 
     return json.dumps({'next_page':'/{}'.format(p.stage)}), 200, {'ContentType':'application/json'}
 
@@ -355,7 +355,7 @@ def survey():
         return r
     p = get_player()
     # sent the participant id to Qualtrics
-    return redirect('https://drexel.qualtrics.com/jfe/form/SV_ewWFeWkDV9uHMtE?participant_id={}'.format(p.id))
+    return redirect('https://gatech.co1.qualtrics.com/jfe/form/SV_6PUWBRnlpQheP6C?participant_id={}'.format(p.id))
 
 @app.route('/goodbye')
 def goodbye():
