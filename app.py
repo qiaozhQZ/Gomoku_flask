@@ -30,7 +30,7 @@ sys.path.append('../AlphaZero_Gomoku')
 
 from game import Board  # noqa: E402
 from mcts_alphaZero import MCTSPlayer  # noqa: E402
-from policy_value_net_numpy import PolicyValueNetNumpy  # noqa: E402
+# from policy_value_net_numpy import PolicyValueNetNumpy  # noqa: E402
 from policy_value_net_pytorch import PolicyValueNet 
 
 
@@ -154,9 +154,6 @@ def get_mcts_player(player_index=1, difficulty=4):
     board.init_board()
 
     size = 8
-    # model_file = '../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_50.model'
-    # model_file = '../AlphaZero_Gomoku/Batch_5_models/5_current_policy.model'
-    # model_file = '../AlphaZero_Gomoku/PyTorch_models/best_policy_885_pt_10500.model'
     model_dict = {'0':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_50.model',
     '1':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_600.model',
     '2':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_3000.model',
@@ -178,12 +175,6 @@ def get_mcts_player(player_index=1, difficulty=4):
     # print('using GPU: ', use_gpu)
 
     best_policy = PolicyValueNet(size, size, model_file = model_file, use_gpu=use_gpu)
-    # policy_1 = 
-    # policy_2 = 
-    # policy_3 = 
-    # policy_4 = 
-    # policy_5 = 
-
     mcts_player = MCTSPlayer(best_policy.policy_value_fn, c_puct=5,
                              n_playout=200) # modify n_playout to make easier models
     mcts_player.set_player_ind(player_index)
@@ -506,7 +497,7 @@ def compute_mcts_move(human, board, difficulty=4):
             mcts_player = get_mcts_player(2, difficulty=difficulty)
 
         #TODO SET TEMP
-        move, scores = mcts_player.get_action(board, temp=10, return_prob=True)
+        move, scores = mcts_player.get_action(board, return_prob=True)
         print('score type: ', scores.dtype)
         c = MctsCache(human=human, board=json.dumps(board.states, sort_keys=True), difficulty=difficulty, move=move.item(), scores=scores.tobytes())
         
