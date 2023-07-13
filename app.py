@@ -263,6 +263,22 @@ def tutorial():
     return render_template('instructions.html')
 
 
+@app.route('/pretest')
+def pretest():
+    r = redirect_player(get_player(), 'pretest')
+    if r is not None:
+        return r
+    return render_template('pretest.html')
+
+
+@app.route('/posttest')
+def posttest():
+    r = redirect_player(get_player(), 'posttest')
+    if r is not None:
+        return r
+    return render_template('posttest.html')
+
+
 @app.route('/training')
 def training():
     player = get_player()
