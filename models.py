@@ -16,10 +16,10 @@ class Player(db.Model):
 
     STAGES = [('consent', 'consent'),
             ('instructions', 'instructions'), 
-            ('pretest', 'pretest')
+            ('pretest', 'pretest'),
             ('training', 'training'),
             ('testing', 'testing'), 
-            ('posttest', 'posttest')
+            ('posttest', 'posttest'),
             ('survey', 'survey'),
             ('done', 'done')]
 

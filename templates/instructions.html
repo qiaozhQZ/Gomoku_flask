@@ -14,10 +14,11 @@
 The winner is the first player to form an unbroken chain of five stones horizontally, vertically, or diagonally.</p>
 
 <h2>How to use our tutor</h2>
-<p>The whole experiment lasts around 35 minutes, with 20 minutes training games and 5 testing games.
+<p>The whole experiment lasts around 45 minutes, with a pretest on 20 board states, 20 minutes of training games and a posttest on 20 board states.
 You are always playing black and goes first.
-During the training games, you would be provided with feedback and can start a new game at any time.
-During the testing games, you would only know the result of your games. You cannot start a new game until a result is reached.</p>
+During pretest and posttest sessions, you will need to make a move on every board state presented to you.
+During the training games, you will be provided with feedback and can start a new game at any time.
+</p>
 
 <p>Please do not navigate away from the page during the experiment.</p>
 
@@ -53,7 +54,8 @@ $(function() {
             contentType: 'application/json',
             dataType: 'json',
             success: function() {
-                window.location.href = "/training"; // do not have training.html, different conditions
+                // window.location.href = "/training"; // do not have training.html, different conditions
+                window.location.href = "/pretest"; // pretest-posttest design
             },
         });
     });
