@@ -223,7 +223,7 @@ def advance_stage():
     db.session.commit() 
 
     if p.stage == 'survey':
-        # senf the participant id to Qualtrics
+        # send the participant id to Qualtrics
         return json.dumps({'next_page':'https://gatech.co1.qualtrics.com/jfe/form/SV_6PUWBRnlpQheP6C?participant_id={}'.format(p.id)}), 200, {'ContentType':'application/json'}
 
     return json.dumps({'next_page':'/{}'.format(p.stage)}), 200, {'ContentType':'application/json'}
