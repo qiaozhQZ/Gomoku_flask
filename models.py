@@ -17,9 +17,11 @@ class Player(db.Model):
     STAGES = [('consent', 'consent'),
             ('instructions', 'instructions'), 
             ('pretest', 'pretest'),
+            ('pretest_result', 'pretest_result'),
             ('training', 'training'),
             ('testing', 'testing'), 
             ('posttest', 'posttest'),
+            ('posttest_result', 'posttest_result'),
             ('survey', 'survey'),
             ('done', 'done')]
 
@@ -100,3 +102,34 @@ class MctsCache(db.Model):
     move = db.Column(db.Integer, nullable=False)
     scores = db.Column(db.Text, nullable=False)
     difficulty = db.Column(db.Integer, nullable=False)
+
+class TestItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    board = db.Column(db.Text, nullable=False)
+    correct_move = db.Column(db.Integer, nullable=False)
+
+class TestAnswer(db.Model):
+    ROTATIONS = [
+        ('0', '0'),
+        ('90', '90'),
+        ('180', '180'),
+        ('270', '270')
+    ]
+
+    id = db.Column(db.Integer, primary_key=True)
+    test_item_id = db.Column(db.Integer, db.ForeignKey('test_item.id'), nullable=False)
+    player_id = db.Column(db.Integer, db.ForeignKey('player.id'),
+                          nullable=False)
+    pretest = db.Column(db.Boolean, nullable=False)
+    flipped = db.Column(db.Boolean, nullable=False)
+    rotation = db.Column(ChoiceType(ROTATIONS), nullable=False)
+    move = db.Column(db.Integer, nullable=False)
+    order = db.Column(db.Integer, nullable=False)
+    start_time = db.Column(db.DateTime, default=None) # keep the time in utc, convert in excel
+    move_time = db.Column(db.DateTime, default=None) # keep the time in utc, convert in excel
+
+
+
+
+    
+
