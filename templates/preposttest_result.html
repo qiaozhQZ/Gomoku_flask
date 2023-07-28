@@ -5,11 +5,13 @@
 
 {% block content%}
 
-<div id="test_display">
+<div id="test_display" class="content_box">
     <p>You got <strong><span id="correct_probs">{{ correct_probs }}</span></strong> out of <strong><span id="total_probs">{{ total_probs }}</span></strong> problems correct.</p>
     <p>As a result, you will receive a payment bonus of <strong>${{ '%0.2f'| format(reward | float)  }}</strong>.</p>
     </br>
-    <button id="continue">Continue Experiment</button>
+    <div id="instructions_buttons">
+        <button id="continue">Continue Experiment</button>
+    </div>
 </div>
 
 {% endblock %}

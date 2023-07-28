@@ -93,8 +93,8 @@ with open("test_items.json", 'r') as fin:
 
 def transform_item(item, flip, rotate):
 
-    answer = np.zeros((9,9), dtype=int)
-    board = np.zeros((9,9), dtype=int)
+    answer = np.zeros((8,8), dtype=int)
+    board = np.zeros((8,8), dtype=int)
 
     answer[item['correct_move']['x']][item['correct_move']['y']] = 1
 
@@ -477,7 +477,7 @@ def pretest():
     if r is not None:
         return r
 
-    return render_template('preposttest.html', size=9)
+    return render_template('preposttest.html', size=8)
 
 
 @app.route('/pretest_result')
@@ -506,7 +506,7 @@ def posttest():
     r = redirect_player(get_player(), 'posttest')
     if r is not None:
         return r
-    return render_template('preposttest.html', size=9)
+    return render_template('preposttest.html', size=8)
 
 def render_test_result(p):
     items = TestItem.query.filter_by(player_id=p.id,
@@ -799,7 +799,7 @@ def compute_mcts_move(human, board, temp=1, difficulty=4):
     probs = get_probs_given_visits(np.array(visits), temp=temp)
     move = np.random.choice(acts, p=probs)
 
-    move_probs = np.zeros(9*9)
+    move_probs = np.zeros(8*8)
     move_probs[list(acts)] = probs
 
     # print('moves and probs')

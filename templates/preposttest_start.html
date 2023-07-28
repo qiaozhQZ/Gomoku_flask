@@ -5,14 +5,17 @@
 
 {% block content%}
 
-<div id="test_display">
+<div id="test_display" class="content_box">
     <p>You will now take a gomoku test to evaluate your knowledge.</p>
     <p>For each problem, you will be presented with a game state and you will
     make your best move as the <strong>black</strong> player. Click on the
     square that you think represents the <strong>best black player move</strong>.</p>
     <p>You will have <strong>{{ test_item_time }} seconds</strong> to answer each problem. If you exceed this time, then the problem will be graded incorrect and you will automatically be advanced to the next problem.</p>
     <p>There is a single best move on each problem and if you choose it, then you will get the problem correct. You will receive a <strong>payment bonus of ${{ '%0.2f'| format(reward_per_prob | float)  }}</strong> for each correct answer, so do your best on each problem.</p>
-    <button id="start_test">Start Test</button>
+
+    <div id="instructions_buttons">
+        <button id="start_test">Start Test</button>
+    </div>
 </div>
 
 {% endblock %}
