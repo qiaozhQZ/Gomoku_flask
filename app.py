@@ -12,6 +12,7 @@ from random import shuffle
 from os.path import exists
 from functools import cache
 
+import numpy as np
 from flask import Flask
 from flask import render_template
 from flask import redirect
@@ -80,6 +81,63 @@ test_items = []
 with open("test_items.json", 'r') as fin:
     test_items = json.loads(fin.read())
 
+def transform_item(item, flip, rotate):
+
+    answer = np.zeros((9,9), dtype=int)
+    board = np.zeros((9,9), dtype=int)
+
+    answer[item['correct_move']['x']][item['correct_move']['y']] = 1
+
+    for move in item['moves']:
+        if move['color'] == "white":
+            board[move['x']][move['y']] = -1
+        else:
+            board[move['x']][move['y']] = 1
+
+    # print('original')
+    # print(answer)
+    # print(board)
+    # print("---------------")
+
+    if flip:
+        answer = np.flip(answer, axis=1)
+        board = np.flip(board, axis=1)
+
+    if rotate in ["90", "180", "270"]:
+        answer = np.rot90(answer)
+        board = np.rot90(board)
+
+    if rotate in ["180", "270"]:
+        answer = np.rot90(answer)
+        board = np.rot90(board)
+
+    if rotate in ["270"]:
+        answer = np.rot90(answer)
+        board = np.rot90(board)
+
+    # print('transformed')
+    # print('flip', flip)
+    # print('rotate', rotate)
+    # print(answer)
+    # print(board)
+    # print("---------------")
+
+    correct = np.where(answer == 1)
+    transformed = {'correct_move': {'x': int(correct[0][0]), 'y': int(correct[1][0]), 'color': "black"},
+                   'moves': []}
+
+    black_moves = np.where(board == 1)
+    for i in range(black_moves[0].shape[0]):
+        transformed['moves'].append({'x': int(black_moves[0][i]), 'y': int(black_moves[1][i]), 'color': 'black'})
+
+    white_moves = np.where(board == -1)
+    for i in range(white_moves[0].shape[0]):
+        transformed['moves'].append({'x': int(white_moves[0][i]), 'y': int(white_moves[1][i]), 'color': 'white'})
+
+    print(transformed)
+
+    return transformed
+
 def get_player():
     if ('player_id' not in session or
             Player.query.filter_by(id=session['player_id']).first() is None):
@@ -112,12 +170,16 @@ def get_player():
             shuffle(pretest)
 
             for item_id, item in pretest:
+                flip = choice([True, False])
+                rotate = choice(["0", "90", "180", "270"])
+                transformed_item = transform_item(item, flip, rotate)
+
                 test_item = TestItem(test_item_id=item_id,
-                                     problem=json.dumps(item),
+                                     problem=json.dumps(transformed_item),
                                      player_id = player.id,
                                      pretest=True,
-                                     flipped=choice([True, False]),
-                                     rotation=choice(["0", "90", "180", "270"]))
+                                     flipped=flip,
+                                     rotation=rotate)
                 db.session.add(test_item)
 
             print("creating posttest")
@@ -126,12 +188,16 @@ def get_player():
             shuffle(posttest)
 
             for item_id, item in posttest:
+                flip = choice([True, False])
+                rotate = choice(["0", "90", "180", "270"])
+                transformed_item = transform_item(item, flip, rotate)
+
                 test_item = TestItem(test_item_id=item_id,
-                                     problem=json.dumps(item),
+                                     problem=json.dumps(transformed_item),
                                      player_id = player.id,
                                      pretest=False,
-                                     flipped=choice([True, False]),
-                                     rotation=choice(["0", "90", "180", "270"]))
+                                     flipped=flip,
+                                     rotation=rotate)
                 db.session.add(test_item)
 
             db.session.commit()
@@ -446,10 +512,6 @@ def render_test_result(p):
             continue
 
         correct_move = json.loads(item.problem)['correct_move']
-        print('user x', user_move['x'])
-        print('user y', user_move['y'])
-        print('correct x', correct_move['x'])
-        print('correct y', correct_move['y'])
         if user_move['x'] == correct_move['x'] and user_move['y'] == correct_move['y']:
             correct_probs += 1
 
