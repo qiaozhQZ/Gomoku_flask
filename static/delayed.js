@@ -68,7 +68,7 @@ $().ready(function(){
             $.ajax({
                     type: "POST",
                     url: '/log',
-                    data: JSON.stringify({'event':'hint'}),
+                    data: JSON.stringify({'event':'hint', 'location': hint_seq[current_idx+1]}),
                     contentType: "application/json",
                     dataType: 'json',
                     success: function(resp) {},
