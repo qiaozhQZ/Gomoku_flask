@@ -1,12 +1,13 @@
 {% extends "base.html" %}
 
 {% block title %}Home{% endblock %}
-{% block heading %}Gomoku Pretest{% endblock %}
+{% block heading %}Gomoku Test Results{% endblock %}
 
 {% block content%}
 
 <div id="test_display">
-    <p>You got <span id="correct_probs">{{ correct_probs }}</span> out of <span id="total_probs">{{ total_probs }}</span> problems correct, which translates into payment bonus of ${{ '%0.2f'| format(reward | float)  }} dollars.</p>
+    <p>You got <strong><span id="correct_probs">{{ correct_probs }}</span></strong> out of <strong><span id="total_probs">{{ total_probs }}</span></strong> problems correct.</p>
+    <p>As a result, you will receive a payment bonus of <strong>${{ '%0.2f'| format(reward | float)  }}</strong>.</p>
     </br>
     <button id="continue">Continue Experiment</button>
 </div>
@@ -20,7 +21,7 @@
             $.ajax({
                 type: "POST",
                 url: '/advance_stage',
-                data: JSON.stringify({'page':'pretest_result'}),
+                data: JSON.stringify({'page': window.location.pathname.substring(1) }),
                 contentType: 'application/json',
                 dataType: 'json',
                 success: function(resp) {

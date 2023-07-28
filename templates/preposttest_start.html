@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+{% block heading %}Gomoku Test Instructions{% endblock %}
+
+{% block content%}
+
+<div id="test_display">
+    <p>You will now take a gomoku test to evaluate your knowledge.</p>
+    <p>For each problem, you will be presented with a game state and you will
+    make your best move as the <strong>black</strong> player. Click on the
+    square that you think represents the <strong>best black player move</strong>.</p>
+    <p>You will have <strong>{{ test_item_time }} seconds</strong> to answer each problem. If you exceed this time, then the problem will be graded incorrect and you will automatically be advanced to the next problem.</p>
+    <p>There is a single best move on each problem and if you choose it, then you will get the problem correct. You will receive a <strong>payment bonus of ${{ '%0.2f'| format(reward_per_prob | float)  }}</strong> for each correct answer, so do your best on each problem.</p>
+    <button id="start_test">Start Test</button>
+</div>
+
+{% endblock %}
+
+{% block footer %}
+<script>
+    $(function() {
+        $('#start_test').click(function(){
+            $.ajax({
+                type: "POST",
+                url: '/advance_stage',
+                data: JSON.stringify({'page': window.location.pathname.substring(1) }),
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function(resp) {
+                    window.location.href = resp['next_page'];
+                },
+            });
+        });
+
+    });
+</script>
+{% endblock %}
+

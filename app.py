@@ -252,6 +252,9 @@ def advance_stage():
         p.stage = 'instructions'
     elif p.stage == 'instructions' and request.get_json().get('page')== 'instructions':
         p.pretest_start = datetime.datetime.utcnow()
+        p.stage = 'pretest_start'
+    elif p.stage == 'pretest_start' and request.get_json().get('page') == 'pretest_start':
+        p.pretest_result_start = datetime.datetime.utcnow()
         p.stage = 'pretest'
     elif p.stage == 'pretest' and request.get_json().get('page') == 'pretest':
         p.pretest_result_start = datetime.datetime.utcnow()
@@ -260,6 +263,9 @@ def advance_stage():
         p.training_start = datetime.datetime.utcnow()
         p.stage = 'training'
     elif p.stage == 'training' and request.get_json().get('page') == 'training':
+        p.posttest_start = datetime.datetime.utcnow()
+        p.stage = 'posttest_start'
+    elif p.stage == 'posttest_start' and request.get_json().get('page') == 'posttest_start':
         p.posttest_start = datetime.datetime.utcnow()
         p.stage = 'posttest'
     elif p.stage == 'posttest' and request.get_json().get('page') == 'posttest':
@@ -379,57 +385,90 @@ def tutorial():
     return render_template('instructions.html')
 
 
+@app.route('/pretest_start')
+def pretest_start():
+    r = redirect_player(get_player(), 'pretest_start')
+    if r is not None:
+        return r
+
+    return render_template('preposttest_start.html',
+                           reward_per_prob=reward_for_correct,
+                           test_item_time=test_item_time)
+
 @app.route('/pretest')
 def pretest():
     r = redirect_player(get_player(), 'pretest')
     if r is not None:
         return r
 
-    return render_template('pretest.html', size=9)
+    return render_template('preposttest.html', size=9)
 
 
 @app.route('/pretest_result')
 def pretest_result():
+    print('pretest result')
     p = get_player()
     r = redirect_player(p, 'pretest_result')
     if r is not None:
         return r
 
-    items = TestItem.query.filter_by(player_id=p.id,
-                                     pretest=p.stage=="pretest_result")
+    return render_test_result(p)
 
-    total_probs = items.count()
-    correct_probs = 0
-    for item in items:
-        user_move = json.loads(item.move)
-        if user_move == 'timeout':
-            continue
 
-        correct_move = json.loads(item.problem)['correct_move']
-        if user_move['x'] == correct_move['x'] and user_move['y'] == correct_move['y']:
-            correct_probs += 1
+@app.route('/posttest_start')
+def posttest_start():
+    r = redirect_player(get_player(), 'posttest_start')
+    if r is not None:
+        return r
 
-    reward = correct_probs * reward_for_correct
-
-    return render_template('pretest_result.html',
-                           correct_probs=correct_probs,
-                           total_probs=total_probs,
-                           reward=reward)
+    return render_template('preposttest_start.html',
+                           reward_per_prob=reward_for_correct,
+                           test_item_time=test_item_time)
 
 @app.route('/posttest')
 def posttest():
     r = redirect_player(get_player(), 'posttest')
     if r is not None:
         return r
-    return render_template('posttest.html')
+    return render_template('preposttest.html', size=9)
+
+def render_test_result(p):
+    items = TestItem.query.filter_by(player_id=p.id,
+                                     pretest=p.stage=="pretest_result")
+
+    total_probs = items.count()
+    correct_probs = 0
+    for item in items:
+        print(item)
+        print(item.move)
+        user_move = json.loads(item.move)
+        if user_move == 'timeout':
+            continue
+
+        correct_move = json.loads(item.problem)['correct_move']
+        print('user x', user_move['x'])
+        print('user y', user_move['y'])
+        print('correct x', correct_move['x'])
+        print('correct y', correct_move['y'])
+        if user_move['x'] == correct_move['x'] and user_move['y'] == correct_move['y']:
+            correct_probs += 1
+
+    reward = correct_probs * reward_for_correct
+
+    return render_template('preposttest_result.html',
+                           correct_probs=correct_probs,
+                           total_probs=total_probs,
+                           reward=reward)
 
 
 @app.route('/posttest_result')
 def posttest_result():
-    r = redirect_player(get_player(), 'posttest_result')
+    p = get_player()
+    r = redirect_player(p, 'posttest_result')
     if r is not None:
         return r
-    return render_template('posttest_result.html')
+
+    return render_test_result(p)
 
 
 @app.route('/training')

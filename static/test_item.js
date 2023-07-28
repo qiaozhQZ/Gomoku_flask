@@ -4,14 +4,15 @@ let time = 0;
 function load_problem(resp){
     if (typeof resp === 'object' && Object.keys(resp).length === 0){
         console.log("DONE!");
+        console.log(window.location.pathname)
         $.ajax({
             type: "POST",
             url: '/advance_stage',
-            data: JSON.stringify({'page':'pretest'}),
+            data: JSON.stringify({'page': window.location.pathname.substring(1) }),
             contentType: 'application/json',
             dataType: 'json',
-            success: function() {
-                window.location.href = "/pretest_result";
+            success: function(resp) {
+                window.location.href = resp['next_page'];
             },
         });
     }
