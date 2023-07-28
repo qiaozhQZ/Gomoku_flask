@@ -94,6 +94,12 @@
 	margin-bottom: 5px;
 }
 
+#test_display{
+	width: 100%;
+	text-align: center;
+	margin-bottom: 5px;
+}
+
 /* #consent {
 	border: 2px solid #000000;
 	padding: 0px 15px 15px 15px;

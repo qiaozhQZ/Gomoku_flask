@@ -1,3 +1,5 @@
+config.yaml
+
 .DS_Store
 
 # ignore the database file that gets created

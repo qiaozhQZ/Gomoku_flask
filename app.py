@@ -7,6 +7,8 @@ import torch
 import yaml
 from yaml import Loader, Dumper
 from random import random
+from random import choice
+from random import shuffle
 from os.path import exists
 from functools import cache
 
@@ -25,6 +27,7 @@ from models import Game
 from models import Move
 from models import Log
 from models import MctsCache
+from models import TestItem
 
 sys.path.append('../AlphaZero_Gomoku')
 
@@ -55,19 +58,27 @@ if exists('config.yaml'):
         # read the file into a file input
         data = yaml.load(fin, Loader=Loader)
         training_time = data['training_time']
-        testing_games = data['testing_games']
+        test_item_time = data['test_item_time']
+        reward_for_correct = data['reward_for_correct']
         random_uuid = data['random_uuid']
 else:
     # numbers for launching the experiment
     training_time = 1200
-    testing_games = 5
+    test_item_time = 60
+    reward_for_correct = 0.5
     random_uuid = True
     # write to the yaml file
     with open('config.yaml','w') as fout:
         # save the variables to the yaml file
-        fout.write(yaml.dump({'training_time':training_time, 
-        'testing_games':testing_games, 'random_uuid':random_uuid}, Dumper=Dumper))
+        fout.write(yaml.dump({'training_time': training_time,
+                              'test_item_time': test_item_time,
+                              'reward_for_correct': reward_for_correct,
+                              'random_uuid': random_uuid}, Dumper=Dumper))
 
+
+test_items = []
+with open("test_items.json", 'r') as fin:
+    test_items = json.loads(fin.read())
 
 def get_player():
     if ('player_id' not in session or
@@ -85,12 +96,46 @@ def get_player():
             num_ctr = Player.query.filter_by(condition='control').count()
             num_dly = Player.query.filter_by(condition='delayed').count() # add delayed condition
 
+            #assign into different conditions to balance
             condition = sorted([(num_imm, random(), 'immediate'), 
-            (num_ctr, random(), 'control'), (num_ctr, random(), 'delayed')])[0][2] #assign into different conditions to balance
+                                (num_ctr, random(), 'control'),
+                                (num_ctr, random(), 'delayed')])[0][2] 
+
             # condition = "immediate"
             player = Player(username=username, condition=condition)
             db.session.add(player)
             db.session.commit()
+
+            print("creating pretest")
+            # create pretest
+            pretest = [(item_id, item) for item_id, item in enumerate(test_items)]
+            shuffle(pretest)
+
+            for item_id, item in pretest:
+                test_item = TestItem(test_item_id=item_id,
+                                     problem=json.dumps(item),
+                                     player_id = player.id,
+                                     pretest=True,
+                                     flipped=choice([True, False]),
+                                     rotation=choice(["0", "90", "180", "270"]))
+                db.session.add(test_item)
+
+            print("creating posttest")
+            # create posttest
+            posttest = [(item_id, item) for item_id, item in enumerate(test_items)]
+            shuffle(posttest)
+
+            for item_id, item in posttest:
+                test_item = TestItem(test_item_id=item_id,
+                                     problem=json.dumps(item),
+                                     player_id = player.id,
+                                     pretest=False,
+                                     flipped=choice([True, False]),
+                                     rotation=choice(["0", "90", "180", "270"]))
+                db.session.add(test_item)
+
+            db.session.commit()
+
         session['player_id'] = player.id
     else:
         player = Player.query.filter_by(id=session['player_id']).first()
@@ -98,6 +143,7 @@ def get_player():
 
 
 def redirect_player(player, cur_page):
+    print('redirect', player, cur_page)
     if player.stage != cur_page:
         # redirect user to the stage they should be on
         return redirect('/{}'.format(player.stage))
@@ -205,13 +251,21 @@ def advance_stage():
         p.instructions_start = datetime.datetime.utcnow()
         p.stage = 'instructions'
     elif p.stage == 'instructions' and request.get_json().get('page')== 'instructions':
+        p.pretest_start = datetime.datetime.utcnow()
+        p.stage = 'pretest'
+    elif p.stage == 'pretest' and request.get_json().get('page') == 'pretest':
+        p.pretest_result_start = datetime.datetime.utcnow()
+        p.stage = 'pretest_result'
+    elif p.stage == 'pretest_result' and request.get_json().get('page') == 'pretest_result':
         p.training_start = datetime.datetime.utcnow()
         p.stage = 'training'
     elif p.stage == 'training' and request.get_json().get('page') == 'training':
-        p.testing_start = datetime.datetime.utcnow()
-        p.stage = 'testing'
-        session.pop('game_id', None) #start a new game for testing
-    elif p.stage == 'testing' and request.get_json().get('page') == 'testing':
+        p.posttest_start = datetime.datetime.utcnow()
+        p.stage = 'posttest'
+    elif p.stage == 'posttest' and request.get_json().get('page') == 'posttest':
+        p.posttest_result_start = datetime.datetime.utcnow()
+        p.stage = 'posttest_result'
+    elif p.stage == 'posttest_result' and request.get_json().get('page') == 'posttest_result':
         p.survey_start = datetime.datetime.utcnow()
         p.stage = 'survey'
     elif p.stage == 'survey' and request.get_json().get('page') == 'survey':
@@ -236,6 +290,68 @@ def training_time_left():
     ############# modify the number for testing #############
     seconds = max(0, training_time - delta.total_seconds()) #take the seconds left from 300 seconds
     return json.dumps({'seconds':seconds}), 200, {'ContentType':'application/json'} #return a dictionary
+
+@app.route('/answer_test_item', methods=['POST'])
+def get_test_item():
+    data = request.get_json()
+    test_item_id = data['test_item_id'];
+    move = data['move'];
+    p = get_player()
+
+    item = TestItem.query.filter_by(player_id=p.id,
+                                    test_item_id=test_item_id,
+                                    pretest=p.stage=="pretest").first()
+
+    item.move = json.dumps(move)
+    item.move_time = datetime.datetime.utcnow();
+
+    db.session.add(item)
+    db.session.commit() 
+
+    return current_test_item_info()
+
+
+@app.route('/current_test_item_info', methods=['POST'])
+def current_test_item_info():
+    p = get_player()
+
+    total_probs = len(test_items)
+    items = TestItem.query.filter_by(player_id=p.id,
+                                     pretest=p.stage=="pretest",
+                                     move=None)
+    completed_probs = (total_probs - items.count())
+
+    if items.count() == 0:
+        return json.dumps({}), 200, {'ContentType': 'application/json'}
+
+    item = items.order_by(TestItem.id).first()
+
+    if item.start_time is None:
+        item.start_time = datetime.datetime.utcnow();
+
+    db.session.add(item)
+    db.session.commit() 
+
+    # delta = datetime.datetime.utcnow() - p.training_start #calculate the period of time
+    time_left = max(test_item_time -
+                    (datetime.datetime.utcnow() - item.start_time).total_seconds(), 0)
+
+    data = {'item_id': item.test_item_id,
+            'moves': json.loads(item.problem)['moves'],
+            'completed_probs': completed_probs+1,
+            'total_probs': total_probs,
+            'seconds': time_left} 
+
+    return json.dumps(data), 200, {'ContentType':'application/json'}
+
+    # get current item
+    # get number of seconds left
+    # get the number of problems solved so far and the total number
+    data = {'item_id': items.test_item_id,
+            'moves': items.problem.moves,
+            }
+
+    return json.dumps({'seconds': 20}), 200, {'ContentType':'application/json'} #return a dictionary
 
 
 @app.route('/testing_games_left')
@@ -268,8 +384,37 @@ def pretest():
     r = redirect_player(get_player(), 'pretest')
     if r is not None:
         return r
-    return render_template('pretest.html')
 
+    return render_template('pretest.html', size=9)
+
+
+@app.route('/pretest_result')
+def pretest_result():
+    p = get_player()
+    r = redirect_player(p, 'pretest_result')
+    if r is not None:
+        return r
+
+    items = TestItem.query.filter_by(player_id=p.id,
+                                     pretest=p.stage=="pretest_result")
+
+    total_probs = items.count()
+    correct_probs = 0
+    for item in items:
+        user_move = json.loads(item.move)
+        if user_move == 'timeout':
+            continue
+
+        correct_move = json.loads(item.problem)['correct_move']
+        if user_move['x'] == correct_move['x'] and user_move['y'] == correct_move['y']:
+            correct_probs += 1
+
+    reward = correct_probs * reward_for_correct
+
+    return render_template('pretest_result.html',
+                           correct_probs=correct_probs,
+                           total_probs=total_probs,
+                           reward=reward)
 
 @app.route('/posttest')
 def posttest():
@@ -277,6 +422,14 @@ def posttest():
     if r is not None:
         return r
     return render_template('posttest.html')
+
+
+@app.route('/posttest_result')
+def posttest_result():
+    r = redirect_player(get_player(), 'posttest_result')
+    if r is not None:
+        return r
+    return render_template('posttest_result.html')
 
 
 @app.route('/training')

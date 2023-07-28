@@ -5,9 +5,31 @@
 
 {% block content%}
 
-<div id="pretest_boards" class="content_box">
-
-    
+<div id="test_display">
+    Problem <span id="completed_probs"></span> of <span id="total_probs"></span></br>
+    Time to answer: <span id="timer"></span> sec.
 </div>
 
+<table class="board">
+    {%for i in range(0, size)%}
+    <tr>
+        {%for j in range(0, size)%}
+            <td>
+                <div id="loc{{i * size + j}}" class="move_location" data-row="{{i}}", data-col="{{j}}"></div>
+            </td>
+        {%endfor%}
+    </tr>
+    {%endfor%}
+</table>
+
+
 {% endblock %}
+
+{% block footer %}
+<script src="test_item.js"></script>
+<!---
+<script src="game.js"></script>
+<script src="testing.js"></script>
+--->
+{% endblock %}
+

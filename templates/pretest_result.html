@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+{% block heading %}Gomoku Pretest{% endblock %}
+
+{% block content%}
+
+<div id="test_display">
+    <p>You got <span id="correct_probs">{{ correct_probs }}</span> out of <span id="total_probs">{{ total_probs }}</span> problems correct, which translates into payment bonus of ${{ '%0.2f'| format(reward | float)  }} dollars.</p>
+    </br>
+    <button id="continue">Continue Experiment</button>
+</div>
+
+{% endblock %}
+
+{% block footer %}
+<script>
+    $(function() {
+        $('#continue').click(function(){
+            $.ajax({
+                type: "POST",
+                url: '/advance_stage',
+                data: JSON.stringify({'page':'pretest_result'}),
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function(resp) {
+                    window.location.href = resp['next_page'];
+                },
+            });
+        });
+
+    });
+</script>
+{% endblock %}
+

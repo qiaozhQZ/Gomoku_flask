@@ -32,8 +32,11 @@ class Player(db.Model):
     stage = db.Column(ChoiceType(STAGES), default='consent')
     consent_start = db.Column(db.DateTime, default=datetime.datetime.utcnow) # keep the time in utc, convert in excel
     instructions_start = db.Column(db.DateTime, default=None)
+    pretest_start = db.Column(db.DateTime, default=None)
+    pretest_result_start = db.Column(db.DateTime, default=None)
     training_start = db.Column(db.DateTime, default=None)
-    testing_start = db.Column(db.DateTime, default=None)
+    posttest_start = db.Column(db.DateTime, default=None)
+    posttest_result_start = db.Column(db.DateTime, default=None)
     survey_start = db.Column(db.DateTime, default=None)
     experiment_end = db.Column(db.DateTime, default=None)
 
@@ -104,11 +107,6 @@ class MctsCache(db.Model):
     difficulty = db.Column(db.Integer, nullable=False)
 
 class TestItem(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    board = db.Column(db.Text, nullable=False)
-    correct_move = db.Column(db.Integer, nullable=False)
-
-class TestAnswer(db.Model):
     ROTATIONS = [
         ('0', '0'),
         ('90', '90'),
@@ -117,14 +115,14 @@ class TestAnswer(db.Model):
     ]
 
     id = db.Column(db.Integer, primary_key=True)
-    test_item_id = db.Column(db.Integer, db.ForeignKey('test_item.id'), nullable=False)
+    test_item_id = db.Column(db.Integer, nullable=False)
+    problem = db.Column(db.Text, nullable=False)
     player_id = db.Column(db.Integer, db.ForeignKey('player.id'),
                           nullable=False)
     pretest = db.Column(db.Boolean, nullable=False)
     flipped = db.Column(db.Boolean, nullable=False)
     rotation = db.Column(ChoiceType(ROTATIONS), nullable=False)
-    move = db.Column(db.Integer, nullable=False)
-    order = db.Column(db.Integer, nullable=False)
+    move = db.Column(db.Integer)
     start_time = db.Column(db.DateTime, default=None) # keep the time in utc, convert in excel
     move_time = db.Column(db.DateTime, default=None) # keep the time in utc, convert in excel
 
