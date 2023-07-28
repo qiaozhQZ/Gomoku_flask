@@ -90,7 +90,7 @@ $().ready(function(){
             $.ajax({
                     type: "POST",
                     url: '/log',
-                    data: JSON.stringify({'event':'previous'}),
+                    data: JSON.stringify({'event':'hint'}),
                     contentType: "application/json",
                     dataType: 'json',
                     success: function(resp) {},
@@ -118,7 +118,7 @@ $().ready(function(){
         $.ajax({
                 type: "POST",
                 url: '/log',
-                data: JSON.stringify({'event':'previous'}),
+                data: JSON.stringify({'event':'new_game'}),
                 contentType: "application/json",
                 dataType: 'json',
                 success: function(resp) {},
