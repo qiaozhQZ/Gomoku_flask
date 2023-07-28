@@ -34,6 +34,7 @@ sys.path.append('../AlphaZero_Gomoku')
 
 from game import Board  # noqa: E402
 from mcts_alphaZero import MCTSPlayer  # noqa: E402
+from mcts_alphaZero import softmax  # noqa: E402
 # from policy_value_net_numpy import PolicyValueNetNumpy  # noqa: E402
 from policy_value_net_pytorch import PolicyValueNet 
 
@@ -61,12 +62,18 @@ if exists('config.yaml'):
         training_time = data['training_time']
         test_item_time = data['test_item_time']
         reward_for_correct = data['reward_for_correct']
+        ai_move_temp = data['ai_move_temp']
+        move_eval_temp = data['move_eval_temp']
+        player_hint_temp = data['player_hint_temp']
         random_uuid = data['random_uuid']
 else:
     # numbers for launching the experiment
     training_time = 1200
     test_item_time = 60
     reward_for_correct = 0.5
+    ai_move_temp = 1.0
+    move_eval_temp = 1.0
+    player_hint_temp = 0.5
     random_uuid = True
     # write to the yaml file
     with open('config.yaml','w') as fout:
@@ -74,6 +81,9 @@ else:
         fout.write(yaml.dump({'training_time': training_time,
                               'test_item_time': test_item_time,
                               'reward_for_correct': reward_for_correct,
+                              'ai_move_temp': ai_move_temp,
+                              'move_eval_temp': move_eval_temp,
+                              'player_hint_temp': player_hint_temp,
                               'random_uuid': random_uuid}, Dumper=Dumper))
 
 
@@ -159,7 +169,7 @@ def get_player():
                                 (num_ctr, random(), 'control'),
                                 (num_ctr, random(), 'delayed')])[0][2] 
 
-            # condition = "immediate"
+            # condition = "delayed"
             player = Player(username=username, condition=condition)
             db.session.add(player)
             db.session.commit()
@@ -655,8 +665,7 @@ def move_player_and_opponent(i, j):
     board.do_move(move)
 
     player_move = Move(game=game, player_move=True, location=move, score=score,
-                       hint_location=hint, raw_move_scores=str(move_probs),
-                       is_hint=False)
+                       hint_location=hint, raw_move_scores=str(move_probs))
     db.session.add(player_move)
     db.session.commit()
 
@@ -694,7 +703,8 @@ def add_move(i, j):
 
     board = get_board(game)
 
-    hint, move_probs = compute_mcts_move(human, board, difficulty=game.game_difficulty)
+    hint, move_probs = compute_mcts_move(human, board, temp=move_eval_temp,
+                                         difficulty=game.game_difficulty)
     # print("hint_location", hint)
     # print("hint_type", type(hint))
     # print("hint_item_type", type(hint.item()))
@@ -709,7 +719,7 @@ def add_move(i, j):
 
     player_move = Move(game=game, player_move=human, location=move,
                        score=score, hint_location=hint,
-                       raw_move_scores=str(move_probs), is_hint=False)
+                       raw_move_scores=str(move_probs))
 
     db.session.add(player_move)
     db.session.commit()
@@ -752,14 +762,15 @@ def make_move(i, j):
         move_player_and_opponent(i, j)
         return redirect("/", code=302)
 
+def get_probs_given_visits(visits, temp):
+    return softmax(1.0/temp * np.log(np.array(visits) + 1e-10))
 
-def compute_mcts_move(human, board, difficulty=4):
+def compute_mcts_move(human, board, temp=1, difficulty=4):
     
     c = MctsCache.query.filter_by(human=human, board=json.dumps(board.states, sort_keys=True), difficulty=difficulty).first()
     # c = MctsCache.query.filter_by(human=human, board=str(board.current_state())).first()
     if c is None:
-
-        print('computing MCTS move')
+        # print('computing MCTS move')
 
         if human:
             mcts_player = get_mcts_player(1, difficulty=difficulty)
@@ -767,25 +778,41 @@ def compute_mcts_move(human, board, difficulty=4):
             mcts_player = get_mcts_player(2, difficulty=difficulty)
 
         #TODO SET TEMP
-        move, scores = mcts_player.get_action(board, return_prob=True)
-        print('score type: ', scores.dtype)
-        c = MctsCache(human=human, board=json.dumps(board.states, sort_keys=True), difficulty=difficulty, move=move.item(), scores=scores.tobytes())
+        # temp here set to 1, should return visit count ratios
+        # move, scores = mcts_player.get_action(board, return_prob=True, temp=1)
+        acts, visits = mcts_player.get_visits(board)
+        # print(acts)
+        # print(visits)
+
+        c = MctsCache(human=human, board=json.dumps(board.states, sort_keys=True), difficulty=difficulty, acts=json.dumps(acts), visits=json.dumps(visits))
         
-        print('human: ', c.human)
-        print('board: ', c.board)
-        print('move: ', c.move)
-        print('difficulty: ', c.difficulty)
+        # print('human: ', c.human)
+        # print('board: ', c.board)
+        # print('move: ', c.visits)
+        # print('difficulty: ', c.difficulty)
         
         db.session.add(c) # save to the database
         db.session.commit()
-    move = c.move
-    scores = np.frombuffer(c.scores, dtype=np.float64)
 
-    return move, scores
-    
+    acts = json.loads(c.acts)
+    visits = json.loads(c.visits)
+    probs = get_probs_given_visits(np.array(visits), temp=temp)
+    move = np.random.choice(acts, p=probs)
 
-@app.route('/optimal_move', methods=['POST'])
-def optimal_move():
+    move_probs = np.zeros(9*9)
+    move_probs[list(acts)] = probs
+
+    # print('moves and probs')
+    # print(move)
+    # print(probs)
+    return int(move), move_probs
+
+
+@app.route('/get_hint', methods=['POST'])
+def get_hint():
+    """
+    This is the AI move?
+    """
     player = get_player()
     game = get_game(player)
 
@@ -795,10 +822,8 @@ def optimal_move():
 
     board = get_board(game)
 
-    optimal_move, move_probs = compute_mcts_move(human, board, difficulty=game.game_difficulty)
-
-    score = move_probs[optimal_move]
-    score = round(score / move_probs.max()) # normalize
+    hint_move, _ = compute_mcts_move(human, board, temp=player_hint_temp,
+                                        difficulty=game.game_difficulty)
 
     if human and game.player_is_white:
         color = 'white'
@@ -807,53 +832,39 @@ def optimal_move():
     else:
         color = 'black'
 
-    i = int(optimal_move) // board.height
-    j = int(optimal_move) % board.height
+    i = int(hint_move) // board.height
+    j = int(hint_move) % board.height
 
-    return jsonify({'color': color, 'location': int(optimal_move), 'score':
-                    score, 'i': i, 'j': j})
+    return jsonify({'color': color, 'location': int(hint_move), 
+                    'i': i, 'j': j})
+    
 
-
-@app.route('/hint')
-def hint():
+@app.route('/get_ai_move', methods=['POST'])
+def get_ai_move():
     player = get_player()
     game = get_game(player)
 
+    human = False
+    if len(game.moves) % 2 == 0:
+        human = True
+
     board = get_board(game)
 
-    move, move_probs = compute_mcts_move(True, board, difficulty=game.game_difficulty) # human hint, true
+    ai_move, _ = compute_mcts_move(human, board, temp=ai_move_temp,
+                                   difficulty=game.game_difficulty)
 
-    score = move_probs[move]
-    score = round(score / move_probs.max()) # normalize
+    if human and game.player_is_white:
+        color = 'white'
+    elif not human and not game.player_is_white:
+        color = 'white'
+    else:
+        color = 'black'
 
-    board.do_move(move)
+    i = int(ai_move) // board.height
+    j = int(ai_move) % board.height
 
-    player_move = Move(game=game, player_move=True, location=int(move),
-                       score=score, hint_location=move,
-                       raw_move_scores=str(move_probs), is_hint=True)
-    db.session.add(player_move)
-    db.session.commit()
-
-    # check if the game has ended
-    end, winner = board.game_end()
-    if end:
-        session.pop('game_id', None)
-        return redirect("/", code=302)
-
-    move, _ = compute_mcts_move(False, board, difficulty=game.game_difficulty) # not human
-    board.do_move(move)
-
-    opponent_move = Move(game=game, player_move=False, location=int(move))
-    db.session.add(opponent_move)
-    db.session.commit()
-
-    end, winner = board.game_end()
-    if end:
-        session.pop('game_id', None)
-        return redirect("/", code=302)
-
-    return redirect("/", code=302)
-
+    return jsonify({'color': color, 'location': int(ai_move),
+                    'i': i, 'j': j})
 
 @app.route('/<path:path>')
 def send_files(path):

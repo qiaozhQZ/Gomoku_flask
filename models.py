@@ -74,9 +74,9 @@ class Move(db.Model):
     score = db.Column(db.Float, nullable=True)
     hint_location = db.Column(db.Integer, nullable=True)
     raw_move_scores = db.Column(db.Text, nullable=True)
-    is_hint = db.Column(db.Boolean, nullable=True)
 
     # Note sure we need this
+    # is_hint = db.Column(db.Boolean, nullable=True)
     # move_number = db.Column(db.int, nullable=False)
 
     def __repr__(self):
@@ -103,8 +103,10 @@ class MctsCache(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     board = db.Column(db.Text, nullable=False)
     human = db.Column(db.Boolean, nullable=False)
-    move = db.Column(db.Integer, nullable=False)
-    scores = db.Column(db.Text, nullable=False)
+    # move = db.Column(db.Integer, nullable=False)
+    # scores = db.Column(db.Text, nullable=False)
+    acts = db.Column(db.Text, nullable=False)
+    visits = db.Column(db.Text, nullable=False)
     difficulty = db.Column(db.Integer, nullable=False)
 
 class TestItem(db.Model):
