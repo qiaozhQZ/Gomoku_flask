@@ -1,57 +1,55 @@
 [   
-    /*template*/
-    {
+    {   
+        "item_name": "template",
         "correct_move":[
-            {"x": ,
-            "y": ,
+            {"x": 0,
+            "y": 0,
             "color": "black"
             }
         ],
         "moves":[
-            {"x": ,
-            "y": ,
+            {"x": 0,
+            "y": 0,
             "color": "black"},
-            {"x": ,
-            "y": ,
+            {"x": 0,
+            "y": 0,
             "color": "white"},
-            {"x": ,
-            "y": ,
+            {"x": 0,
+            "y": 0,
             "color": "black"},
-            {"x": ,
-            "y": ,
+            {"x": 0,
+            "y": 0,
             "color": "white"},
-            {"x": ,
-            "y": ,
+            {"x": 0,
+            "y": 0,
             "color": "black"},
-            {"x": ,
-            "y": ,
+            {"x": 0,
+            "y": 0,
             "color": "white"},
-            {"x": ,
-            "y": ,
+            {"x": 0,
+            "y": 0,
             "color": "black"},
-            {"x": ,
-            "y": ,
+            {"x": 0,
+            "y": 0,
             "color": "white"},
-            {"x": ,
-            "y": ,
+            {"x": 0,
+            "y": 0,
             "color": "black"},
-            {"x": ,
-            "y": ,
-            "color": "white"},
+            {"x": 0,
+            "y": 0,
+            "color": "white"}
         ]
     },
 
-    /*training_1643*/
-    {
+    {   
+        "item_name": "training_1643",
         "correct_move":[
             {"x": 1,
             "y": 0,
-            "color": "black"
-            },
+            "color": "black"},
             {"x": 6,
             "y": 5,
-            "color": "black"
-            }
+            "color": "black"}
         ],
         "moves":[
             {"x": 4,
@@ -101,12 +99,12 @@
             "color": "black"},
             {"x": 3,
             "y": 2,
-            "color": "white"},
+            "color": "white"}
         ]
-    }
+    },
 
-    /*training_21*/
-    {
+    {   
+        "item_name": "training_21",
         "correct_move":[
             {"x": 1,
             "y": 4,
@@ -139,9 +137,9 @@
             "color": "white"}
         ]
     },
-
-    /*training_6574*/
-    {
+    
+    {   
+        "item_name": "training_6574",
         "correct_move": [
             {"x": 4,
             "y": 6,
@@ -184,13 +182,12 @@
         ]
     },
 
-    /*training_6*/
-    {
+    {   
+        "item_name": "training_6",
         "correct_move":[
             {"x": 4,
             "y": 0,
-            "color": "black"
-            }
+            "color": "black"}
         ],
         "moves":[
             {"x": 4,
@@ -276,17 +273,16 @@
             "color": "black"},
             {"x": 7,
             "y": 5,
-            "color": "white"},
+            "color": "white"}
         ]
     },
 
-    /*testing_32*/
-    {
+    {   
+        "item_name": "testing_32",
         "correct_move":[
             {"x": 2,
             "y": 2,
-            "color": "black"
-            }
+            "color": "black"}
         ],
         "moves":[
             {"x": 4,
@@ -330,17 +326,16 @@
             "color": "black"},
             {"x": 3,
             "y": 5,
-            "color": "white"},            
+            "color": "white"}           
         ]
     },
 
-    /*training_6386*/
-    {
+    {   
+        "item_name": "training_6386",
         "correct_move":[
             {"x": 4,
             "y": 2,
-            "color": "black"
-            }
+            "color": "black"}
         ],
         "moves":[
             {"x": 5,
@@ -400,17 +395,15 @@
         ]
     },    
 
-    /*testing_61*/
-    {
+    {   
+        "item_name": "testing_61",
         "correct_move":[
             {"x": 1,
             "y": 7,
-            "color": "black"
-            },
+            "color": "black"},
             {"x": 6,
             "y": 1,
-            "color": "black"
-            }            
+            "color": "black"}            
         ],
         "moves":[
             {"x": 7,
@@ -470,13 +463,12 @@
         ]
     },    
 
-    /*testing_26*/
-    {
+    {   
+        "item_name": "testing_26",
         "correct_move":[
             {"x": 3,
             "y": 6,
-            "color": "black"
-            }
+            "color": "black"}
         ],
         "moves":[
             {"x": 3,
@@ -542,13 +534,12 @@
         ]
     },
     
-    /*testing_6738*/
-    {
+    {   
+        "item_name": "testing_6738",
         "correct_move":[
             {"x": 2,
             "y": 1,
-            "color": "black"
-            }
+            "color": "black"}
         ],
         "moves":[
             {"x": 3,
@@ -590,13 +581,12 @@
         ]
     },
     
-    /*testing_68*/
-    {
+    {   
+        "item_name": "testing_68",
         "correct_move":[
             {"x": 2,
             "y": 5,
-            "color": "black"
-            }
+            "color": "black"}
         ],
         "moves":[
             {"x": 7,
@@ -630,6 +620,6 @@
             "y": 2,
             "color": "white"}          
         ]
-    },        
+    }        
 ]
 
