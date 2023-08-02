@@ -119,6 +119,7 @@ class TestItem(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     test_item_id = db.Column(db.Integer, nullable=False)
+    test_item_name = db.Column(db.Text, nullable=False)
     problem = db.Column(db.Text, nullable=False)
     player_id = db.Column(db.Integer, db.ForeignKey('player.id'),
                           nullable=False)
