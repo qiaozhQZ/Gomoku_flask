@@ -96,7 +96,8 @@ def transform_item(item, flip, rotate):
     answer = np.zeros((8,8), dtype=int)
     board = np.zeros((8,8), dtype=int)
 
-    answer[item['correct_move']['x']][item['correct_move']['y']] = 1
+    for move in item['correct_move']:
+        answer[move['x']][move['y']] = 1
 
     for move in item['moves']:
         if move['color'] == "white":
@@ -133,8 +134,9 @@ def transform_item(item, flip, rotate):
     # print("---------------")
 
     correct = np.where(answer == 1)
-    transformed = {'correct_move': {'x': int(correct[0][0]), 'y': int(correct[1][0]), 'color': "black"},
-                   'moves': []}
+    transformed = {'correct_move': [], 'moves': []}
+    for i in range(correct[0].shape[0]):
+        transformed['correct_move'].append({'x': int(correct[0][i]), 'y': int(correct[1][i]), 'color': 'black'})
 
     black_moves = np.where(board == 1)
     for i in range(black_moves[0].shape[0]):
@@ -169,7 +171,7 @@ def get_player():
                                 (num_ctr, random(), 'control'),
                                 (num_ctr, random(), 'delayed')])[0][2] 
 
-            # condition = "delayed"
+            condition = "delayed"
             player = Player(username=username, condition=condition)
             db.session.add(player)
             db.session.commit()
@@ -276,11 +278,13 @@ def get_mcts_player(player_index=1, difficulty=4):
     board.init_board()
 
     size = 8
-    model_dict = {'0':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_50.model',
-    '1':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_600.model',
-    '2':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_3000.model',
-    '3':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_5200.model',
-    '4':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_10500.model'}
+    model_dict = {
+            '0':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_50.model',
+            '1':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_600.model',
+            '2':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_3000.model',
+            '3':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_5200.model',
+            '4':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_10500.model'}
+            # '4':'../AlphaZero_Gomoku/testing_only_2023-07-30_213745/current.model'}
     model_file = model_dict[str(difficulty)]
     
 
@@ -515,15 +519,19 @@ def render_test_result(p):
     total_probs = items.count()
     correct_probs = 0
     for item in items:
-        print(item)
-        print(item.move)
         user_move = json.loads(item.move)
         if user_move == 'timeout':
             continue
 
-        correct_move = json.loads(item.problem)['correct_move']
-        if user_move['x'] == correct_move['x'] and user_move['y'] == correct_move['y']:
-            correct_probs += 1
+        correct_moves = json.loads(item.problem)['correct_move']
+        print(correct_moves)
+        for correct_move in correct_moves:
+            print(user_move)
+            print(correct_move)
+            print()
+            if user_move['x'] == correct_move['x'] and user_move['y'] == correct_move['y']:
+                correct_probs += 1
+                break
 
     reward = correct_probs * reward_for_correct
 
@@ -713,7 +721,7 @@ def add_move(i, j):
 
     move = int(i) * board.height + int(j)
     score = move_probs[move]
-    score = round(score / move_probs.max()) # normalize
+    score = round(score / move_probs.max(), 2) # normalize
 
     board.do_move(move)
 

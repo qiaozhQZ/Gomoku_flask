@@ -1,5 +1,5 @@
 let test_item = null;
-let time = 0;
+let time = -1;
 
 function load_problem(resp){
     if (typeof resp === 'object' && Object.keys(resp).length === 0){
@@ -26,26 +26,6 @@ function load_problem(resp){
     // set timer
     time = parseInt(resp['seconds']);
     $('#timer').html(time);
-    setInterval(function () {
-        time -= 1;
-        if (time > 0) {
-            $('#timer').html(time);
-        } else {
-            if (time == 0){
-                $('#timer').html(time);
-            }
-            $.ajax({
-                type: "POST",
-                url: '/answer_test_item',
-                data: JSON.stringify({"test_item_id": test_item, "move": "timeout"}),
-                contentType: 'application/json',
-                dataType: 'json',
-                success: function(resp) {
-                    load_problem(resp);
-                }
-            });
-        }
-    }, 1000);
 
     // initialize board
     $('.move_location').removeClass('whitestone')
@@ -93,5 +73,27 @@ function get_problem(){
 }
 
 $().ready(function(){
+    setInterval(function () {
+        time -= 1;
+        if (time > 0) {
+            $('#timer').html(time);
+        } else {
+            if (time == 0){
+                $('#timer').html(time);
+            }
+            $.ajax({
+                type: "POST",
+                url: '/answer_test_item',
+                data: JSON.stringify({"test_item_id": test_item, "move": "timeout"}),
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function(resp) {
+                    load_problem(resp);
+                }
+            });
+        }
+    }, 1000);
+
     get_problem();
+
 });
