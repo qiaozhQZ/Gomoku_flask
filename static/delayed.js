@@ -76,6 +76,11 @@ $().ready(function(){
         }
     });
 
+    //TODO, not working
+    $('#end_game').click(function(){
+        enable_review();
+    });
+
     $(document).on("new_game", function() {
         disable_review();
         move_seq = [];
