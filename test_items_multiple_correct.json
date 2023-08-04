@@ -104,6 +104,60 @@
     },
 
     {   
+        "item_name": "intro_18",
+        "correct_move":[
+            {"x": 2,
+            "y": 4,
+            "color": "black"
+            }
+        ],
+        "moves":[
+            {"x": 5,
+            "y": 4,
+            "color": "black"},
+            {"x": 4,
+            "y": 4,
+            "color": "white"},
+            {"x": 3,
+            "y": 5,
+            "color": "black"},
+            {"x": 5,
+            "y": 6,
+            "color": "white"},
+            {"x": 3,
+            "y": 6,
+            "color": "black"},
+            {"x": 4,
+            "y": 3,
+            "color": "white"},
+            {"x": 4,
+            "y": 5,
+            "color": "black"},
+            {"x": 2,
+            "y": 7,
+            "color": "white"},
+            {"x": 4,
+            "y": 2,
+            "color": "black"},
+            {"x": 6,
+            "y": 5,
+            "color": "white"},
+            {"x": 3,
+            "y": 3,
+            "color": "black"},
+            {"x": 3,
+            "y": 4,
+            "color": "white"},
+            {"x": 1,
+            "y": 5,
+            "color": "black"},
+            {"x": 2,
+            "y": 5,
+            "color": "white"}
+        ]
+    },
+
+    {   
         "item_name": "training_21",
         "correct_move":[
             {"x": 1,
@@ -137,7 +191,47 @@
             "color": "white"}
         ]
     },
-    
+
+    {   
+        "item_name": "intro_19",
+        "correct_move":[
+            {"x": 3,
+            "y": 5,
+            "color": "black"
+            },
+            {"x": 3,
+            "y": 6,
+            "color": "black"
+            }
+        ],
+        "moves":[
+            {"x": 3,
+            "y": 3,
+            "color": "black"},
+            {"x": 2,
+            "y": 3,
+            "color": "white"},
+            {"x": 3,
+            "y": 7,
+            "color": "black"},
+            {"x": 4,
+            "y": 2,
+            "color": "white"},
+            {"x": 3,
+            "y": 4,
+            "color": "black"},
+            {"x": 3,
+            "y": 2,
+            "color": "white"},
+            {"x": 1,
+            "y": 4,
+            "color": "black"},
+            {"x": 4,
+            "y": 4,
+            "color": "white"}
+        ]
+    },
+
     {   
         "item_name": "training_6574",
         "correct_move": [
@@ -396,6 +490,60 @@
     },    
 
     {   
+        "item_name": "intro_14",
+        "correct_move":[
+            {"x": 1,
+            "y": 4,
+            "color": "black"
+            }
+        ],
+        "moves":[
+            {"x": 4,
+            "y": 3,
+            "color": "black"},
+            {"x": 3,
+            "y": 3,
+            "color": "white"},
+            {"x": 3,
+            "y": 4,
+            "color": "black"},
+            {"x": 3,
+            "y": 5,
+            "color": "white"},
+            {"x": 4,
+            "y": 4,
+            "color": "black"},
+            {"x": 4,
+            "y": 6,
+            "color": "white"},
+            {"x": 2,
+            "y": 4,
+            "color": "black"},
+            {"x": 5,
+            "y": 4,
+            "color": "white"},
+            {"x": 2,
+            "y": 5,
+            "color": "black"},
+            {"x": 1,
+            "y": 6,
+            "color": "white"},
+            {"x": 4,
+            "y": 1,
+            "color": "black"},
+            {"x": 4,
+            "y": 2,
+            "color": "white"},
+            {"x": 2,
+            "y": 3,
+            "color": "black"},
+            {"x": 2,
+            "y": 2,
+            "color": "white"}
+        ]
+    },
+
+    {   
         "item_name": "testing_61",
         "correct_move":[
             {"x": 4,
@@ -510,6 +658,48 @@
             {"x": 4,
             "y": 6,
             "color": "white"}            
+        ]
+    },
+
+    {   
+        "item_name": "intro_12",
+        "correct_move":[
+            {"x": 3,
+            "y": 2,
+            "color": "black"
+            }
+        ],
+        "moves":[
+            {"x": 3,
+            "y": 3,
+            "color": "black"},
+            {"x": 2,
+            "y": 4,
+            "color": "white"},
+            {"x": 3,
+            "y": 5,
+            "color": "black"},
+            {"x": 4,
+            "y": 4,
+            "color": "white"},
+            {"x": 5,
+            "y": 4,
+            "color": "black"},
+            {"x": 4,
+            "y": 5,
+            "color": "white"},
+            {"x": 4,
+            "y": 3,
+            "color": "black"},
+            {"x": 2,
+            "y": 3,
+            "color": "white"},
+            {"x": 3,
+            "y": 4,
+            "color": "black"},
+            {"x": 3,
+            "y": 6,
+            "color": "white"}
         ]
     },
 
@@ -745,6 +935,54 @@
             "color": "white"}            
         ]
     },    
+
+    {   
+        "item_name": "intro_15_swap",
+        "correct_move":[
+            {"x": 1,
+            "y": 2,
+            "color": "black"
+            }
+        ],
+        "moves":[
+            {"x": 3,
+            "y": 2,
+            "color": "black"},
+            {"x": 4,
+            "y": 2,
+            "color": "white"},
+            {"x": 2,
+            "y": 2,
+            "color": "black"},
+            {"x": 4,
+            "y": 4,
+            "color": "white"},
+            {"x": 4,
+            "y": 1,
+            "color": "black"},
+            {"x": 4,
+            "y": 3,
+            "color": "white"},
+            {"x": 5,
+            "y": 3,
+            "color": "black"},
+            {"x": 3,
+            "y": 5,
+            "color": "white"},
+            {"x": 1,
+            "y": 3,
+            "color": "black"},
+            {"x": 2,
+            "y": 4,
+            "color": "white"},
+            {"x": 1,
+            "y": 5,
+            "color": "black"},
+            {"x": 7,
+            "y": 7,
+            "color": "white"}
+        ]
+    },
 
     {   
         "item_name": "testing_68",
