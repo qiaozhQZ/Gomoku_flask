@@ -1,47 +1,5 @@
 [   
     {   
-        "item_name": "template",
-        "correct_move":[
-            {"x": 0,
-            "y": 0,
-            "color": "black"
-            }
-        ],
-        "moves":[
-            {"x": 0,
-            "y": 0,
-            "color": "black"},
-            {"x": 0,
-            "y": 0,
-            "color": "white"},
-            {"x": 0,
-            "y": 0,
-            "color": "black"},
-            {"x": 0,
-            "y": 0,
-            "color": "white"},
-            {"x": 0,
-            "y": 0,
-            "color": "black"},
-            {"x": 0,
-            "y": 0,
-            "color": "white"},
-            {"x": 0,
-            "y": 0,
-            "color": "black"},
-            {"x": 0,
-            "y": 0,
-            "color": "white"},
-            {"x": 0,
-            "y": 0,
-            "color": "black"},
-            {"x": 0,
-            "y": 0,
-            "color": "white"}
-        ]
-    },
-
-    {   
         "item_name": "training_1643_swap",
         "correct_move":[
             {"x": 1,
@@ -544,6 +502,90 @@
     },
 
     {   
+        "item_name": "testing_6618",
+        "correct_move":[
+            {"x": 2,
+            "y": 4,
+            "color": "black"
+            }
+        ],
+        "moves":[
+            {"x": 4,
+            "y": 3,
+            "color": "black"},
+            {"x": 4,
+            "y": 2,
+            "color": "white"},
+            {"x": 4,
+            "y": 1,
+            "color": "black"},
+            {"x": 5,
+            "y": 3,
+            "color": "white"},
+            {"x": 6,
+            "y": 4,
+            "color": "black"},
+            {"x": 3,
+            "y": 1,
+            "color": "white"},
+            {"x": 2,
+            "y": 0,
+            "color": "black"},
+            {"x": 3,
+            "y": 2,
+            "color": "white"},
+            {"x": 3,
+            "y": 3,
+            "color": "black"},
+            {"x": 2,
+            "y": 2,
+            "color": "white"},
+            {"x": 1,
+            "y": 2,
+            "color": "black"},
+            {"x": 5,
+            "y": 2,
+            "color": "white"},
+            {"x": 6,
+            "y": 2,
+            "color": "black"},
+            {"x": 5,
+            "y": 4,
+            "color": "white"},
+            {"x": 5,
+            "y": 4,
+            "color": "black"},
+            {"x": 5,
+            "y": 1,
+            "color": "white"},
+            {"x": 5,
+            "y": 0,
+            "color": "black"},
+            {"x": 6,
+            "y": 3,
+            "color": "white"},
+            {"x": 7,
+            "y": 3,
+            "color": "black"},
+            {"x": 4,
+            "y": 6,
+            "color": "white"},
+            {"x": 4,
+            "y": 5,
+            "color": "black"},
+            {"x": 1,
+            "y": 3,
+            "color": "white"},
+            {"x": 4,
+            "y": 0,
+            "color": "black"},
+            {"x": 3,
+            "y": 5,
+            "color": "white"}
+        ]
+    },
+
+    {   
         "item_name": "testing_61",
         "correct_move":[
             {"x": 4,
@@ -1023,6 +1065,52 @@
             "y": 2,
             "color": "white"}          
         ]
-    }        
+    },
+
+    {   
+        "item_name": "training_6307",
+        "correct_move":[
+            {"x": 2,
+            "y": 4,
+            "color": "black"
+            },
+            {"x": 3,
+            "y": 1,
+            "color": "black"
+            }
+        ],
+        "moves":[
+            {"x": 5,
+            "y": 3,
+            "color": "black"},
+            {"x": 5,
+            "y": 4,
+            "color": "white"},
+            {"x": 3,
+            "y": 2,
+            "color": "black"},
+            {"x": 4,
+            "y": 3,
+            "color": "white"},
+            {"x": 4,
+            "y": 2,
+            "color": "black"},
+            {"x": 4,
+            "y": 4,
+            "color": "white"},
+            {"x": 3,
+            "y": 4,
+            "color": "black"},
+            {"x": 5,
+            "y": 2,
+            "color": "white"},
+            {"x": 3,
+            "y": 3,
+            "color": "black"},
+            {"x": 2,
+            "y": 5,
+            "color": "white"}
+        ]
+    }
 ]
 
