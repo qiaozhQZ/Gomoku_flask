@@ -55,10 +55,19 @@ $().ready(function(){
     
     $('#previous').click(function(){
         prev_move();
+
+        if (current_idx % 2 == 1){
+            prev_move();
+        }
+
     });
 
     $('#next').click(function(){
         next_move();
+
+        if (current_idx % 2 == 1){
+            next_move();
+        }
     });
 
     $('#hint').click(function(){
@@ -77,8 +86,9 @@ $().ready(function(){
     });
 
     //TODO, not working
-    $('#end_game').click(function(){
-        enable_review();
+    $('#end_game_button').click(function(){
+        disable_clicking();
+        $(document).trigger('game_end');
     });
 
     $(document).on("new_game", function() {

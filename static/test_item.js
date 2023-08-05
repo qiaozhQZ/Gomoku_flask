@@ -37,6 +37,7 @@ function load_problem(resp){
     });
 
     // bind event listeners for making move
+    $('.move_location').unbind('click');
     $('.move_location').click(function(data){
         let ele = $(data.currentTarget);
         let x = ele.data('col');
