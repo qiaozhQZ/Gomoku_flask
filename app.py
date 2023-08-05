@@ -171,7 +171,7 @@ def get_player():
                                 (num_ctr, random(), 'control'),
                                 (num_ctr, random(), 'delayed')])[0][2] 
 
-            condition = "delayed"
+            condition = "immediate"
             player = Player(username=username, condition=condition)
             db.session.add(player)
             db.session.commit()
@@ -303,8 +303,8 @@ def get_mcts_player(player_index=1, difficulty=4):
     # print('using GPU: ', use_gpu)
 
     best_policy = PolicyValueNet(size, size, model_file = model_file, use_gpu=use_gpu)
-    mcts_player = MCTSPlayer(best_policy.policy_value_fn, c_puct=5,
-                             n_playout=200) # modify n_playout to make easier models
+    mcts_player = MCTSPlayer(best_policy.policy_value_fn, c_puct=8,
+                             n_playout=1600) # modify n_playout to make easier models
     mcts_player.set_player_ind(player_index)
 
     return mcts_player

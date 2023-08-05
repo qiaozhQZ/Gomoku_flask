@@ -1,11 +1,56 @@
 [   
-    {
-        "item_name": "training_1643",
-        "correct_move":{
-            "x": 1,
+    {   
+        "item_name": "template",
+        "correct_move":[
+            {"x": 0,
             "y": 0,
             "color": "black"
-        },
+            }
+        ],
+        "moves":[
+            {"x": 0,
+            "y": 0,
+            "color": "black"},
+            {"x": 0,
+            "y": 0,
+            "color": "white"},
+            {"x": 0,
+            "y": 0,
+            "color": "black"},
+            {"x": 0,
+            "y": 0,
+            "color": "white"},
+            {"x": 0,
+            "y": 0,
+            "color": "black"},
+            {"x": 0,
+            "y": 0,
+            "color": "white"},
+            {"x": 0,
+            "y": 0,
+            "color": "black"},
+            {"x": 0,
+            "y": 0,
+            "color": "white"},
+            {"x": 0,
+            "y": 0,
+            "color": "black"},
+            {"x": 0,
+            "y": 0,
+            "color": "white"}
+        ]
+    },
+
+    {   
+        "item_name": "training_1643",
+        "correct_move":[
+            {"x": 1,
+            "y": 0,
+            "color": "black"},
+            {"x": 6,
+            "y": 5,
+            "color": "black"}
+        ],
         "moves":[
             {"x": 4,
             "y": 4,
@@ -57,13 +102,14 @@
             "color": "white"}
         ]
     },
+
     {   
         "item_name": "training_21",
-        "correct_move":{
-            "x": 1,
+        "correct_move":[
+            {"x": 1,
             "y": 4,
-            "color": "black"
-        },
+            "color": "black"}
+        ],
         "moves":[
             {"x": 0,
             "y": 0,
@@ -91,14 +137,17 @@
             "color": "white"}
         ]
     },
-
+    
     {   
         "item_name": "training_6574",
-        "correct_move":{
-            "x": 4,
+        "correct_move": [
+            {"x": 4,
             "y": 6,
-            "color": "black"
-        },
+            "color": "black"},
+            {"x":4,
+            "y":1,
+            "color": "black"}
+        ],
         "moves": [
             {"x": 0,
             "y": 4,
@@ -135,11 +184,11 @@
 
     {   
         "item_name": "training_6",
-        "correct_move":{
-            "x": 4,
+        "correct_move":[
+            {"x": 4,
             "y": 0,
-            "color": "black"
-        },
+            "color": "black"}
+        ],
         "moves":[
             {"x": 4,
             "y": 6,
@@ -230,11 +279,11 @@
 
     {   
         "item_name": "testing_32",
-        "correct_move":{
-            "x": 2,
+        "correct_move":[
+            {"x": 2,
             "y": 2,
-            "color": "black"
-        },
+            "color": "black"}
+        ],
         "moves":[
             {"x": 4,
             "y": 3,
@@ -283,11 +332,11 @@
 
     {   
         "item_name": "training_6386",
-        "correct_move":{
-            "x": 4,
+        "correct_move":[
+            {"x": 4,
             "y": 2,
-            "color": "black"
-        },
+            "color": "black"}
+        ],
         "moves":[
             {"x": 5,
             "y": 5,
@@ -348,11 +397,14 @@
 
     {   
         "item_name": "testing_61",
-        "correct_move":{
-            "x": 1,
+        "correct_move":[
+            {"x": 1,
             "y": 7,
-            "color": "black"
-        },           
+            "color": "black"},
+            {"x": 6,
+            "y": 1,
+            "color": "black"}            
+        ],
         "moves":[
             {"x": 7,
             "y": 0,
@@ -413,11 +465,11 @@
 
     {   
         "item_name": "testing_26",
-        "correct_move":{
-            "x": 3,
+        "correct_move":[
+            {"x": 3,
             "y": 6,
-            "color": "black"
-        },
+            "color": "black"}
+        ],
         "moves":[
             {"x": 3,
             "y": 3,
@@ -484,11 +536,11 @@
     
     {   
         "item_name": "testing_6738",
-        "correct_move":{
-            "x": 2,
+        "correct_move":[
+            {"x": 2,
             "y": 1,
-            "color": "black"
-        },
+            "color": "black"}
+        ],
         "moves":[
             {"x": 3,
             "y": 4,
@@ -531,11 +583,11 @@
     
     {   
         "item_name": "testing_68",
-        "correct_move":{
-            "x": 2,
+        "correct_move":[
+            {"x": 2,
             "y": 5,
-            "color": "black"
-        },
+            "color": "black"}
+        ],
         "moves":[
             {"x": 7,
             "y": 7,
@@ -570,3 +622,4 @@
         ]
     }        
 ]
+
