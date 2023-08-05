@@ -88,7 +88,7 @@ else:
 
 
 test_items = []
-with open("test_items_multiple_correct.json", 'r') as fin:
+with open("test_items.json", 'r') as fin:
     test_items = json.loads(fin.read())
 
 def transform_item(item, flip, rotate):
