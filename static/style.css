@@ -5,6 +5,7 @@
 
 .board {
 	border-collapse: collapse;
+    margin-top: 15px;
 	margin-left: auto;
 	margin-right: auto;
 	background-image: url(wood.jpeg);
@@ -39,6 +40,20 @@
 	background-image: url(black70.png);
 }
 
+.newstone.blackstone.hintstone{
+	background-image: url(newblackhint70.png);
+    opacity: 1.0;
+}
+
+.newstone.whitestone.hintstone{
+	background-image: url(newwhitehint70.png);
+    opacity: 1.0;
+}
+
+.newstone {
+    opacity: 0.5;
+}
+
 .whitestone {
 	background-image: url(white70.png);
 }
@@ -55,13 +70,21 @@
 #review {
 	width: 100%;
 	text-align: center;
-	margin-bottom: 10px;
+}
+
+#review div {
+    width: 595px;
+    margin: auto;
 }
 
 #start_instructions {
 	width: 100%;
 	text-align: center;
-	margin-bottom: 10px;
+}
+
+#start_instructions div {
+    width: 595px;
+    margin: auto;
 }
 
 .score_div h3{
@@ -91,7 +114,8 @@
 #new_game_control{
 	width: 100%;
 	text-align: center;
-	margin-bottom: 5px;
+	margin-top: 10px;
+	margin-bottom: 10px;
 }
 
 /* #consent {

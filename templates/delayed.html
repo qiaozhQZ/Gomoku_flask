@@ -12,24 +12,18 @@
 <!-- button always appear -->
 
 <div id = "start_instructions">
-    <div>You can start making a move by clicking on any grid.</div>
-</div>
-
-<div id = "new_game_control">
-    <button id="new_game_button">Start new game</button>
-    <button id="end_game_button">End the game</button>
-</div>
-
-<div id="toolbar">
-    <div>Once you complete the game or want to end a game, you can review each move in the game <br>
-        and get feedback on move score and hints from the AI model.</div>
+    <div>You can start making a move by clicking on any grid square.  Once you
+        complete the game or want to end a game, you can review each move in
+        the game and get feedback on move score and hints from the AI
+        model.</div>
 </div>
 
 <div id="review">
     <h2>Game Review Mode</h2>
-    <div>You can now review your game (go forward and backwards through moves) <br>
-        and look at the estimated score for each move as well as request <br>
-        hints for the best move in each board state. </div>
+    <div>You can now review your game (go forward and backwards through moves)
+        and look at the estimated score for each move as well as request hints
+        for the best move in each board state. The move you made in each state
+        will be shown by a slightly transparent stone. </div>
 	<div class='score_div'><h3>Move Score: <span id='score'>{{ '%0.1f' | format(score|float)}}<span></h3></div>
 	<div class='comment_div'>A measure (ranging from 0-1) of how optimal your last move was
 		(1=best).</div>
@@ -39,6 +33,12 @@
         <button id="hint">Hint</button>
         <button id="next">Next</button></div>
 </div>
+
+<div id = "new_game_control">
+    <button id="new_game_button">Start new game</button>
+    <button id="end_game_button">Start game review</button>
+</div>
+
 
 
 

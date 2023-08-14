@@ -168,7 +168,7 @@ def get_player():
                                 (num_ctr, random(), 'control'),
                                 (num_ctr, random(), 'delayed')])[0][2] 
 
-            condition = "immediate"
+            condition = "delayed"
             player = Player(username=username, condition=condition)
             db.session.add(player)
             db.session.commit()
@@ -663,7 +663,7 @@ def add_move(i, j):
                                          difficulty=game.game_difficulty)
 
     # this breaks ties by always choosing the first.
-    hint = np.argmax(move_probs)
+    hint = int(np.argmax(move_probs))
 
     # print("hint_location", hint)
     # print("hint_type", type(hint))

@@ -1,10 +1,27 @@
 function disable_review(){
     console.log('disable?');
-    $('#review').hide()
+    $('#new_game_button').hide();
+    $('#end_game_button').show();
+    $('#review').hide();
+    $('#end_game_button').show();
+    $('#start_instructions').show();
 }
 
 function enable_review(){
-    $('#review').show()
+    $('#new_game_button').show();
+    $('#end_game_button').hide();
+    $('#end_game_button').hide();
+    $('#review').show();
+    $('#start_instructions').hide();
+
+    if (current_idx % 2 == 0){
+        $('#score').html(score_seq[current_idx]);
+        $('#loc' + move_seq[current_idx]).addClass("newstone");
+    }
+    else{
+        $('#score').html('--');
+    }
+
 }
 
 $().ready(function(){
@@ -17,7 +34,7 @@ $().ready(function(){
             $('#loc' + move_seq[current_idx]).removeClass(color_seq[current_idx] + "stone");
             current_idx -= 1;
 
-            if (current_idx >= 0){
+            if (current_idx >= 0 && current_idx % 2 == 0){
                 $('#score').html(score_seq[current_idx]);
             }
             else{
@@ -40,7 +57,13 @@ $().ready(function(){
             $('.hintstone').removeClass('hintstone');	
             current_idx += 1;
             $('#loc' + move_seq[current_idx]).addClass(color_seq[current_idx] + "stone");
-            $('#score').html(score_seq[current_idx]);
+
+            if (current_idx >= 0 && current_idx % 2 == 0){
+                $('#score').html(score_seq[current_idx]);
+            }
+            else{
+                $('#score').html('--');
+            }
 
             $.ajax({
                     type: "POST",
@@ -54,26 +77,35 @@ $().ready(function(){
     }
     
     $('#previous').click(function(){
+        $('.newstone').removeClass('newstone');
         prev_move();
 
         if (current_idx % 2 == 1){
             prev_move();
         }
 
+        $('#loc' + move_seq[current_idx]).addClass("newstone");
+
+
     });
 
     $('#next').click(function(){
+        $('.newstone').removeClass('newstone');
         next_move();
 
         if (current_idx % 2 == 1){
             next_move();
         }
+
+        if (current_idx % 2 == 0){
+            $('#loc' + move_seq[current_idx]).addClass("newstone");
+        }
     });
 
     $('#hint').click(function(){
-        if (current_idx < move_seq.length - 1){
+        if (current_idx % 2 == 0){
             $('.hintstone').removeClass('hintstone');	
-            $('#loc'+hint_seq[current_idx+1]).addClass('hintstone');	
+            $('#loc'+hint_seq[current_idx]).addClass('hintstone');	
             $.ajax({
                     type: "POST",
                     url: '/log',
@@ -85,7 +117,6 @@ $().ready(function(){
         }
     });
 
-    //TODO, not working
     $('#end_game_button').click(function(){
         disable_clicking();
         $(document).trigger('game_end');
@@ -101,7 +132,25 @@ $().ready(function(){
     });
 
     $(document).on("game_end", function() {
-        enable_review();
+        $.ajax({
+            type: "POST",
+            url: '/new_game',
+            data: JSON.stringify({}),
+            contentType: "application/json",
+            dataType: 'json',
+            success: function(resp) {
+                enable_review();
+            },
+        });
+
+        $.ajax({
+            type: "POST",
+            url: '/log',
+            data: JSON.stringify({'event':'end_game'}),
+            contentType: "application/json",
+            dataType: 'json',
+            success: function(resp) {},
+        });
     });
 
     $(document).on("move_complete", function(ev, data){
