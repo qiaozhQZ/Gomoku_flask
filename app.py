@@ -69,7 +69,7 @@ else:
     # numbers for launching the experiment
     training_time = 1200
     test_item_time = 60
-    reward_for_correct = 0.5
+    reward_for_correct = 0.25
     ai_move_temp = 1.0
     move_eval_temp = 1.0
     random_uuid = True
