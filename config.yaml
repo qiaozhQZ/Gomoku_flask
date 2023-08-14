@@ -1,0 +1,7 @@
+ai_move_temp: 1.0
+move_eval_temp: 1.0
+player_hint_temp: 0.5
+random_uuid: true
+training_time: 200
+test_item_time: 60
+reward_for_correct: 0.25
