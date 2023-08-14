@@ -64,7 +64,6 @@ if exists('config.yaml'):
         reward_for_correct = data['reward_for_correct']
         ai_move_temp = data['ai_move_temp']
         move_eval_temp = data['move_eval_temp']
-        player_hint_temp = data['player_hint_temp']
         random_uuid = data['random_uuid']
 else:
     # numbers for launching the experiment
@@ -73,7 +72,6 @@ else:
     reward_for_correct = 0.5
     ai_move_temp = 1.0
     move_eval_temp = 1.0
-    player_hint_temp = 0.5
     random_uuid = True
     # write to the yaml file
     with open('config.yaml','w') as fout:
@@ -83,7 +81,6 @@ else:
                               'reward_for_correct': reward_for_correct,
                               'ai_move_temp': ai_move_temp,
                               'move_eval_temp': move_eval_temp,
-                              'player_hint_temp': player_hint_temp,
                               'random_uuid': random_uuid}, Dumper=Dumper))
 
 
@@ -171,7 +168,7 @@ def get_player():
                                 (num_ctr, random(), 'control'),
                                 (num_ctr, random(), 'delayed')])[0][2] 
 
-            condition = "delayed"
+            condition = "immediate"
             player = Player(username=username, condition=condition)
             db.session.add(player)
             db.session.commit()
@@ -281,12 +278,13 @@ def get_mcts_player(player_index=1, difficulty=4):
 
     size = 8
     model_dict = {
-            '0':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_50.model',
-            '1':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_600.model',
-            '2':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_3000.model',
-            '3':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_5200.model',
-            '4':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_10500.model'}
+            # '0':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_50.model',
+            # '1':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_600.model',
+            # '2':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_3000.model',
+            # '3':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_5200.model',
+            # '4':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_10500.model'}
             # '4':'../AlphaZero_Gomoku/testing_only_2023-07-30_213745/current.model'}
+            '4':'../AlphaZero_Gomoku/testing_only_2023-08-14_101016/temp.model'}
     model_file = model_dict[str(difficulty)]
     
 
@@ -651,58 +649,6 @@ def survey():
 def goodbye():
     return render_template('goodbye.html')
 
-
-# @app.route('/done')
-# def done():
-#     return render_template('done.html')
-
-
-######## time the function and log into a file ######
-def move_player_and_opponent(i, j): 
-    player = get_player()
-    game = get_game(player)
-
-    board = get_board(game)
-
-    hint, move_probs = compute_mcts_move(True, board, difficulty=game.game_difficulty) # human is True
-
-    # print(move_probs)
-
-    move = int(i) * board.height + int(j)
-    score = move_probs[move]
-    score = round(score / move_probs.max())# normalize
-
-    board.do_move(move)
-
-    player_move = Move(game=game, player_move=True, location=move, score=score,
-                       hint_location=hint, raw_move_scores=str(move_probs))
-    db.session.add(player_move)
-    db.session.commit()
-
-    # check if the game has ended
-    end, winner = board.game_end()
-    if end:
-        game.player_won = winner == 1
-        db.session.add(game)
-        db.session.commit()
-        session.pop('game_id', None)
-        return redirect("/", code=302)
-
-    move, _ = compute_mcts_move(False, board, difficulty=game.game_difficulty) # do not need probability
-    board.do_move(move)
-
-    opponent_move = Move(game=game, player_move=False, location=int(move))
-    db.session.add(opponent_move)
-    db.session.commit()
-
-    end, winner = board.game_end()
-    if end:
-        game.player_won = winner == 1
-        db.session.add(game)
-        db.session.commit()
-        session.pop('game_id', None)
-
-
 def add_move(i, j):
     player = get_player()
     game = get_game(player)
@@ -713,8 +659,12 @@ def add_move(i, j):
 
     board = get_board(game)
 
-    hint, move_probs = compute_mcts_move(human, board, temp=move_eval_temp,
+    _, move_probs = compute_mcts_move(human, board, temp=move_eval_temp,
                                          difficulty=game.game_difficulty)
+
+    # this breaks ties by always choosing the first.
+    hint = np.argmax(move_probs)
+
     # print("hint_location", hint)
     # print("hint_type", type(hint))
     # print("hint_item_type", type(hint.item()))
@@ -764,13 +714,9 @@ def log():
 
     return jsonify({'success': True})
 
-@app.route('/move/<i>/<j>', methods=['GET', 'POST'])
+@app.route('/move/<i>/<j>', methods=['POST'])
 def make_move(i, j):
-    if request.method == 'POST':
-        return jsonify(add_move(i, j))
-    else:
-        move_player_and_opponent(i, j)
-        return redirect("/", code=302)
+    return jsonify(add_move(i, j))
 
 def get_probs_given_visits(visits, temp):
     return softmax(1.0/temp * np.log(np.array(visits) + 1e-10))
@@ -787,12 +733,8 @@ def compute_mcts_move(human, board, temp=1, difficulty=4):
         else:
             mcts_player = get_mcts_player(2, difficulty=difficulty)
 
-        #TODO SET TEMP
-        # temp here set to 1, should return visit count ratios
         # move, scores = mcts_player.get_action(board, return_prob=True, temp=1)
         acts, visits = mcts_player.get_visits(board)
-        # print(acts)
-        # print(visits)
 
         c = MctsCache(human=human, board=json.dumps(board.states, sort_keys=True), difficulty=difficulty, acts=json.dumps(acts), visits=json.dumps(visits))
         
@@ -832,8 +774,11 @@ def get_hint():
 
     board = get_board(game)
 
-    hint_move, _ = compute_mcts_move(human, board, temp=player_hint_temp,
-                                        difficulty=game.game_difficulty)
+    _, move_probs = compute_mcts_move(human, board, temp=1e-5,
+                                      difficulty=game.game_difficulty)
+
+    # this breaks ties by always choosing the first.
+    hint_move = np.argmax(move_probs)
 
     if human and game.player_is_white:
         color = 'white'
