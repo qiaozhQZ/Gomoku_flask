@@ -31,11 +31,6 @@ function load_problem(resp){
     $('.move_location').removeClass('whitestone')
     $('.move_location').removeClass('blackstone')
 
-    resp['moves'].forEach(function(move){
-        let selector = '.move_location[data-row="' + move['y'] + '"][data-col="' + move['x'] + '"]';
-        let elements = $(selector).addClass(move['color'] + "stone");
-    });
-
     // bind event listeners for making move
     $('.move_location').unbind('click');
     $('.move_location').click(function(data){
@@ -55,6 +50,12 @@ function load_problem(resp){
             }
         });
 
+    });
+
+    resp['moves'].forEach(function(move){
+        let selector = '.move_location[data-row="' + move['y'] + '"][data-col="' + move['x'] + '"]';
+        $(selector).addClass(move['color'] + "stone");
+        $(selector).unbind('click');
     });
 
 }
