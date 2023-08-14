@@ -17,9 +17,11 @@ function enable_review(){
     if (current_idx % 2 == 0){
         $('#score').html(score_seq[current_idx]);
         $('#loc' + move_seq[current_idx]).addClass("newstone");
+        $('#hint').prop("disabled", false);
     }
     else{
         $('#score').html('--');
+        $('#hint').prop("disabled",true);
     }
 
 }
@@ -36,9 +38,11 @@ $().ready(function(){
 
             if (current_idx >= 0 && current_idx % 2 == 0){
                 $('#score').html(score_seq[current_idx]);
+                $('#hint').prop("disabled", false);
             }
             else{
                 $('#score').html('--');
+                $('#hint').prop("disabled", true);
             }
 
             $.ajax({
@@ -60,9 +64,11 @@ $().ready(function(){
 
             if (current_idx >= 0 && current_idx % 2 == 0){
                 $('#score').html(score_seq[current_idx]);
+                $('#hint').prop("disabled", false);
             }
             else{
                 $('#score').html('--');
+                $('#hint').prop("disabled", true);
             }
 
             $.ajax({

@@ -5,15 +5,15 @@
 
 {% block content%}
 
+<div id = "start_instructions">
+    <div>You can move by clicking on any grid square.</div>
+</div>
+
 <div id="toolbar">
 	<div class='score_div'><h3>Last Move Score: <span id='score'>{{ '%0.1f' | format(score|float)}}<span></h3></div>
 	<div class='comment_div'>A measure (ranging from 0-1) of how optimal your last move was
 		(1=best).</div>
 	<button id="hint_button">Please give me a hint</button>
-</div>
-
-<div id = "start_instructions">
-    <div>You can start making a move by clicking on any grid square.</div>
 </div>
 
 <div id="winning_dialog">

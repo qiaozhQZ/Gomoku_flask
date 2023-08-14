@@ -89,6 +89,7 @@ function display_winner(winner){
     $(document).trigger('game_end');
     disable_clicking();
     $('#toolbar').hide();
+    $('#start_instructions').hide();
     $('#winning_dialog').show();
     if (winner == 1){
         $('#winning_text').text('You Won!');
@@ -175,6 +176,8 @@ $().ready(function(){
                 clear_board();
                 $('#toolbar').show();
                 $('#winning_dialog').hide();
+                $('#start_instructions').show();
+                $('#score').html('--');
                 enable_clicking();
             },
         });
