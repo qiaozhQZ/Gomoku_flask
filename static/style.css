@@ -145,6 +145,10 @@
 	margin-right: 15px;
 }
 
+#test_instructions{
+	text-align: center;
+}
+
 #instructions_buttons{
 	width: 100%;
 	text-align: center;
