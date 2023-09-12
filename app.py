@@ -85,7 +85,8 @@ else:
 
 
 test_items = []
-with open("test_items.json", 'r') as fin:
+# with open("test_items.json", 'r') as fin:
+with open("test_items_testing.json", 'r') as fin:
     test_items = json.loads(fin.read())
 
 def transform_item(item, flip, rotate):
@@ -168,7 +169,7 @@ def get_player():
                                 (num_ctr, random(), 'control'),
                                 (num_ctr, random(), 'delayed')])[0][2] 
 
-            condition = "delayed"
+            # condition = "delayed"
             player = Player(username=username, condition=condition)
             db.session.add(player)
             db.session.commit()
@@ -192,7 +193,7 @@ def get_player():
                                      rotation=rotate)
                 db.session.add(test_item)
 
-            print("creating posttest")
+            # print("creating posttest")
             # create posttest
             posttest = [(item_id, item) for item_id, item in enumerate(test_items)]
             shuffle(posttest)
@@ -284,7 +285,7 @@ def get_mcts_player(player_index=1, difficulty=4):
             # '3':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_5200.model',
             # '4':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_10500.model'}
             # '4':'../AlphaZero_Gomoku/testing_only_2023-07-30_213745/current.model'}
-            '4':'../AlphaZero_Gomoku/testing_only_2023-08-14_101016/temp.model'}
+            '4':'../AlphaZero_Gomoku/Models/1375_current_policy.model'}
     model_file = model_dict[str(difficulty)]
     
 
@@ -524,6 +525,9 @@ def render_test_result(p):
             continue
 
         correct_moves = json.loads(item.problem)['correct_move']
+        # if item.is_correct:
+        #     correct_probs += 1
+        # TODO move up intest_items 
         print(correct_moves)
         for correct_move in correct_moves:
             print(user_move)
