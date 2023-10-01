@@ -8,12 +8,23 @@ function load_problem(resp){
         $.ajax({
             type: "POST",
             url: '/advance_stage',
+            timeout: 30000, // set to 30 sec or 30000 millisec
             data: JSON.stringify({'page': window.location.pathname.substring(1) }),
             contentType: 'application/json',
             dataType: 'json',
             success: function(resp) {
                 window.location.href = resp['next_page'];
             },
+            error: function(request, status, err) {
+                if (status == "timeout") {
+                    // timeout -> reload the page and try again
+                    console.log("timeout");
+                    window.location.reload();
+                } else {
+                    // another error occured
+                    alert("error: " + request + status + err);
+                }
+            }
         });
     }
 
@@ -41,12 +52,23 @@ function load_problem(resp){
         $.ajax({
             type: "POST",
             url: '/answer_test_item',
+            timeout: 30000, // set to 30 sec or 30000 millisec
             data: JSON.stringify({"test_item_id": test_item, "move": {'x': x,
                 'y': y, 'color': 'black'}}),
             contentType: 'application/json',
             dataType: 'json',
             success: function(resp) {
                 load_problem(resp);
+            },
+            error: function(request, status, err) {
+                if (status == "timeout") {
+                    // timeout -> reload the page and try again
+                    console.log("timeout");
+                    window.location.reload();
+                } else {
+                    // another error occured
+                    alert("error: " + request + status + err);
+                }
             }
         });
 
@@ -69,6 +91,17 @@ function get_problem(){
         dataType: 'json',
         success: function(resp) {
             load_problem(resp);
+        },
+        timeout: 30000, // set to 30 sec or 30000 millisec
+        error: function(request, status, err) {
+            if (status == "timeout") {
+                // timeout -> reload the page and try again
+                console.log("timeout");
+                window.location.reload();
+            } else {
+                // another error occured
+                alert("error: " + request + status + err);
+            }
         }
     });
 
@@ -91,6 +124,17 @@ $().ready(function(){
                 dataType: 'json',
                 success: function(resp) {
                     load_problem(resp);
+                },
+                timeout: 30000, // set to 30 sec or 30000 millisec
+                error: function(request, status, err) {
+                    if (status == "timeout") {
+                        // timeout -> reload the page and try again
+                        console.log("timeout");
+                        window.location.reload();
+                    } else {
+                        // another error occured
+                        alert("error: " + request + status + err);
+                    }
                 }
             });
         }

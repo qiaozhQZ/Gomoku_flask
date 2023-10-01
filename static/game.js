@@ -1,3 +1,18 @@
+$.ajaxSetup({
+    type: 'POST',
+    timeout: 30000, // set default timeout to 15 sec.
+    error: function(request, status, err) {
+        if (status == "timeout") {
+            // timeout -> reload the page and try again
+            console.log("timeout");
+            window.location.reload();
+        } else {
+            // another error occured
+            alert("error: " + request + status + err);
+        }
+    }
+})
+
 let clickable = false;
 let num_games_left = 99999;
 
