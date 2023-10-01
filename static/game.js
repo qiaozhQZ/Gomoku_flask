@@ -5,11 +5,11 @@ $.ajaxSetup({
         if (status == "timeout") {
             // timeout -> reload the page and try again
             console.log("timeout");
-            window.location.reload();
         } else {
             // another error occured
             alert("error: " + request + status + err);
         }
+        window.location.reload();
     }
 })
 
