@@ -85,8 +85,8 @@ else:
 
 
 test_items = []
-# with open("test_items.json", 'r') as fin:
-with open("test_items_testing.json", 'r') as fin:
+with open("test_items.json", 'r') as fin:
+# with open("test_items_testing.json", 'r') as fin:
     test_items = json.loads(fin.read())
 
 def transform_item(item, flip, rotate):
@@ -303,7 +303,7 @@ def get_mcts_player(player_index=1, difficulty=4):
 
     best_policy = PolicyValueNet(size, size, model_file = model_file, use_gpu=use_gpu)
     mcts_player = MCTSPlayer(best_policy.policy_value_fn, c_puct=8,
-                             n_playout=1600) # modify n_playout to make easier models
+                             n_playout=400) # modify n_playout to make easier models
     mcts_player.set_player_ind(player_index)
 
     return mcts_player
