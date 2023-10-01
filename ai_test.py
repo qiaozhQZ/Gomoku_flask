@@ -34,7 +34,6 @@ def render_probs(problem, save=False):
 
     for move in problem['moves']:
         move_loc = int(move['y']) * board.height + int(move['x'])
-        print(move_loc)
         board.do_move(move_loc)
         if move['color'] == 'black':
             black_x.append(move['x'])
@@ -64,7 +63,7 @@ def render_probs(problem, save=False):
     im1 = ax1.imshow(move_probs.reshape((8,8)))
     ax1.scatter(x=black_x, y=black_y, c="black", s=1000)
     ax1.scatter(x=white_x, y=white_y, c="white", s=1000)
-    ax1.scatter(x=correct_x, y=correct_y, c="red", s=500)
+    ax1.scatter(x=correct_x, y=correct_y, c="red", s=1000)
     # , c='black', s=40)
     # im2 = ax2.imshow(move_probs2.reshape((8,8)))
 
