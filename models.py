@@ -127,6 +127,7 @@ class TestItem(db.Model):
     flipped = db.Column(db.Boolean, nullable=False)
     rotation = db.Column(ChoiceType(ROTATIONS), nullable=False)
     move = db.Column(db.Integer)
+    # is_correct = db.Column(db.Boolean, nullable=False)
     start_time = db.Column(db.DateTime, default=None) # keep the time in utc, convert in excel
     move_time = db.Column(db.DateTime, default=None) # keep the time in utc, convert in excel
 

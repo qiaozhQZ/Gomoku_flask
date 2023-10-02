@@ -381,9 +381,11 @@ def training_time_left():
 @app.route('/answer_test_item', methods=['POST'])
 def get_test_item():
     data = request.get_json()
+    p = get_player()
+    print("/answer_test_item call with player {} and data {}".format(p, data))
     test_item_id = data['test_item_id']
     move = data['move']
-    p = get_player()
+
 
     item = TestItem.query.filter_by(player_id=p.id,
                                     test_item_id=test_item_id,
