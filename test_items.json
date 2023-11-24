@@ -153,12 +153,8 @@
     {   
         "item_name": "intro_19",
         "correct_move":[
-            {"x": 3,
-            "y": 5,
-            "color": "black"
-            },
-            {"x": 3,
-            "y": 6,
+            {"x": 4,
+            "y": 3,
             "color": "black"
             }
         ],
@@ -197,7 +193,7 @@
             "y": 6,
             "color": "black"},
             {"x":4,
-            "y":1,
+            "y":2,
             "color": "black"}
         ],
         "moves": [
@@ -237,8 +233,8 @@
     {   
         "item_name": "training_6",
         "correct_move":[
-            {"x": 4,
-            "y": 0,
+            {"x": 7,
+            "y": 4,
             "color": "black"}
         ],
         "moves":[
@@ -334,6 +330,9 @@
         "correct_move":[
             {"x": 2,
             "y": 2,
+            "color": "black"},
+            {"x": 4,
+            "y": 5,
             "color": "black"}
         ],
         "moves":[
@@ -453,7 +452,10 @@
             {"x": 1,
             "y": 4,
             "color": "black"
-            }
+            }, 
+            {"x":5,
+            "y": 2,
+            "color": "black"}
         ],
         "moves":[
             {"x": 4,
@@ -502,10 +504,10 @@
     },
 
     {   
-        "item_name": "testing_6618",
+        "item_name": "training_6618",
         "correct_move":[
-            {"x": 2,
-            "y": 4,
+            {"x": 3,
+            "y": 0,
             "color": "black"
             }
         ],
@@ -661,12 +663,6 @@
             {"x": 5,
             "y": 2,
             "color": "black"},
-            {"x": 1,
-            "y": 6,
-            "color": "white"},
-            {"x": 0,
-            "y": 7,
-            "color": "black"},
             {"x": 2,
             "y": 6,
             "color": "white"},
@@ -748,8 +744,8 @@
     {   
         "item_name": "slide_30",
         "correct_move":[
-            {"x": 3,
-            "y": 3,
+            {"x": 2,
+            "y": 4,
             "color": "black"
             }
         ],
@@ -762,12 +758,6 @@
             "color": "white"},
             {"x": 7,
             "y": 1,
-            "color": "black"},
-            {"x": 6,
-            "y": 2,
-            "color": "white"},
-            {"x": 1,
-            "y": 5,
             "color": "black"},
             {"x": 4,
             "y": 3,
@@ -799,8 +789,8 @@
             {"x": 2,
             "y": 7,
             "color": "black"},
-            {"x": 3,
-            "y": 5,
+            {"x": 6,
+            "y": 2,
             "color": "white"},
             {"x": 3,
             "y": 7,
@@ -931,7 +921,7 @@
     },
 
     {   
-        "item_name": "slide_28",
+        "item_name": "slide_28_swap",
         "correct_move":[
             {"x": 4,
             "y": 2,
@@ -982,7 +972,7 @@
         "item_name": "intro_15_swap",
         "correct_move":[
             {"x": 1,
-            "y": 2,
+            "y": 4,
             "color": "black"
             }
         ],
@@ -1068,10 +1058,10 @@
     },
 
     {   
-        "item_name": "training_6307",
+        "item_name": "training_6307_swap",
         "correct_move":[
-            {"x": 2,
-            "y": 4,
+            {"x": 3,
+            "y": 5,
             "color": "black"
             },
             {"x": 3,
