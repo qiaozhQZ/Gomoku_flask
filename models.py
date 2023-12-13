@@ -27,6 +27,7 @@ class Player(db.Model):
             ('done', 'done')]
 
     id = db.Column(db.Integer, primary_key=True)
+    external_vars = db.Column(db.String(200), unique=False, nullable=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     games = db.relationship('Game', backref='player', lazy=True)
     condition = db.Column(ChoiceType(CONDITIONS))
