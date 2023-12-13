@@ -148,7 +148,7 @@ def transform_item(item, flip, rotate):
 
     return transformed
 
-def get_player():
+def get_player(external_vars=""):
     if ('player_id' not in session or
             Player.query.filter_by(id=session['player_id']).first() is None):
         if random_uuid:
@@ -170,7 +170,9 @@ def get_player():
                                 (num_ctr, random(), 'delayed')])[0][2] 
 
             # condition = "delayed"
-            player = Player(username=username, condition=condition)
+            external_vars = request.query_string.decode()
+            player = Player(username=username, condition=condition,
+                            external_vars=external_vars)
             db.session.add(player)
             db.session.commit()
 
@@ -365,7 +367,7 @@ def advance_stage():
 
     if p.stage == 'survey':
         # send the participant id to Qualtrics
-        return json.dumps({'next_page':'https://gatech.co1.qualtrics.com/jfe/form/SV_6PUWBRnlpQheP6C?participant_id={}'.format(p.id)}), 200, {'ContentType':'application/json'}
+        return json.dumps({'next_page':'https://gatech.co1.qualtrics.com/jfe/form/SV_56BedMBZm7q1TUO?participant_id={}'.format(p.id)}), 200, {'ContentType':'application/json'}
 
     return json.dumps({'next_page':'/{}'.format(p.stage)}), 200, {'ContentType':'application/json'}
 
