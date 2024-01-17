@@ -167,7 +167,7 @@ def get_player(external_vars=""):
             #assign into different conditions to balance
             condition = sorted([(num_imm, random(), 'immediate'), 
                                 (num_ctr, random(), 'control'),
-                                (num_ctr, random(), 'delayed')])[0][2] 
+                                (num_dly, random(), 'delayed')])[0][2] 
 
             # condition = "delayed"
             external_vars = request.query_string.decode()
