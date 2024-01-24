@@ -12,7 +12,7 @@ def render_game(game_id, save=False):
     if not os.path.exists(path):
         os.mkdir(path)
 
-    with open('189_player_game_move.csv') as fin:
+    with open('prolific_pilot_player_game_move.csv') as fin:
 
         player_x_loc = []
         player_y_loc = []
@@ -45,7 +45,7 @@ def render_game(game_id, save=False):
             except:
                 pass
 
-            location = int(line[10])
+            location = int(line[11])
             is_player = int(line[9]) == 1
 
             if is_player:
@@ -92,7 +92,7 @@ def render_game(game_id, save=False):
 
 def get_game_ids():
 
-    with open('189_player_game_move.csv') as fin:
+    with open('prolific_pilot_player_game_move.csv') as fin:
         game_ids = set()
         for line in fin:
             if 'player_id' in line:
