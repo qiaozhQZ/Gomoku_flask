@@ -67,7 +67,7 @@ if exists('config.yaml'):
         random_uuid = data['random_uuid']
 else:
     # numbers for launching the experiment
-    training_time = 1200
+    training_time = 2100
     test_item_time = 60
     reward_for_correct = 0.25
     ai_move_temp = 1.0
