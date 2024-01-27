@@ -371,7 +371,6 @@ def advance_stage():
 
     return json.dumps({'next_page':'/{}'.format(p.stage)}), 200, {'ContentType':'application/json'}
 
-
 @app.route('/training_time_left')
 def training_time_left():
     p = get_player()
