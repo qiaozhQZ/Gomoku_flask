@@ -3,3 +3,5 @@ uwsgi
 pyyaml
 flask-sqlalchemy
 sqlalchemy_utils
+scipy
+tqdm
