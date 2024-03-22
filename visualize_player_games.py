@@ -78,11 +78,11 @@ def render_game(game_id, save=False):
         ax.plot([i, i], [0, 8], color="black")
 
     if player_won is None:
-        ax.title.set_text('Game Unfinished')
+        ax.title.set_text(condition + "_{}_".format(player_id) + 'training_{}'.format(game_id) + '  Game Unfinished')
     elif player_won:
-        ax.title.set_text('Player Won')
+        ax.title.set_text(condition + "_{}_".format(player_id) + 'training_{}'.format(game_id) + '  Player Won')
     else:
-        ax.title.set_text('Player Lost')
+        ax.title.set_text(condition + "_{}_".format(player_id) + 'training_{}'.format(game_id) + '  Player Lost')
 
     if save:
         if not os.path.exists(path + "{}/".format(player_id)):
