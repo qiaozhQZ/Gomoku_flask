@@ -57,17 +57,20 @@ def compute_mcts_move(human, board, temp=1, difficulty=4):
 
     return int(move), move_probs
 
+def play_game(num_game, moves_cnt):
+    board_width, board_height, n = 8, 8, 5
+    board = Board(width=board_width, height=board_height, n_in_row=n)
+    game = Game(board)
+    mcts_human = get_mcts_player(model_file_1, 1, difficulty=4)
+    mcts_ai = get_mcts_player(model_file_2, 2, difficulty=4)
+
 # play n games
 # make i moves in each game
-
-    # num_game = 2
    
-    # for i in range(num_game):
-    #     print("game", i)
-    #     game.start_play(mcts_human_1, mcts_AI_2, start_player=1, is_shown=0, cnt_move=moves_cnt)
-    #     print(board.states)
-
-    
+    for i in range(num_game):
+        print("game", i)
+        game.start_play(mcts_human, mcts_ai, start_player=1, is_shown=0, cnt_move=moves_cnt)
+        print(board.states)
         
 def save_to_db():
     pass
@@ -75,6 +78,5 @@ def save_to_db():
 if __name__ == "__main__":
     model_file_1 = '../AlphaZero_Gomoku/Models/1375_current_policy.model'
     model_file_2 = '../AlphaZero_Gomoku/Models/1375_current_policy.model'
-
-
+    play_game(2, 5)
     # create_cache(model_file_1, model_file_2, 5)
