@@ -64,6 +64,7 @@ if exists('config.yaml'):
         reward_for_correct = data['reward_for_correct']
         ai_move_temp = data['ai_move_temp']
         move_eval_temp = data['move_eval_temp']
+        n_playout = data['n_playout']
         random_uuid = data['random_uuid']
 else:
     # numbers for launching the experiment
@@ -71,6 +72,7 @@ else:
     test_item_time = 60
     reward_for_correct = 0.25
     ai_move_temp = 1.0
+    n_playout = 400
     move_eval_temp = 1.0
     random_uuid = True
     # write to the yaml file
@@ -241,12 +243,10 @@ def get_game(player):
 
         if is_testing:
             num_test_games = Game.query.filter_by(player=player, training_game=False).count()
-            game = Game(player=player, player_is_white=False, training_game=not is_testing, game_difficulty=num_test_games%5)
+            game = Game(player=player, player_is_white=False, training_game=not is_testing)
             
         else:
-            game = Game(player=player, player_is_white=False, training_game=not is_testing, game_difficulty=4)
-        
-        print("game difficulty", game.game_difficulty)
+            game = Game(player=player, player_is_white=False, training_game=not is_testing)
 
         db.session.add(game)
         db.session.commit()
@@ -267,29 +267,17 @@ def get_board(game):
     return board
 
 
-def get_mcts_player(player_index=1, difficulty=4):
+def get_mcts_player(player_index=1, n_playout=400):
     """
     Get an mcts player, an index of 1 corresponds to first player (typically
     human) and an index of 2 corresponds to the second player (typically AI
     opponent).
     """
-    if difficulty < 0 or difficulty > 4:
-        raise ValueError('Difficulty must be between 0 and 4.')
-
     board = Board()
     board.init_board()
 
     size = 8
-    model_dict = {
-            # '0':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_50.model',
-            # '1':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_600.model',
-            # '2':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_3000.model',
-            # '3':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_5200.model',
-            # '4':'../AlphaZero_Gomoku/Models/PyTorch_models/best_policy_885_pt_10500.model'}
-            # '4':'../AlphaZero_Gomoku/testing_only_2023-07-30_213745/current.model'}
-            '4':'../AlphaZero_Gomoku/Models/1375_current_policy.model'}
-    model_file = model_dict[str(difficulty)]
-    
+    model_file = '../AlphaZero_Gomoku/Models/1375_current_policy.model'
 
     # for numpy
     # try:
@@ -305,7 +293,7 @@ def get_mcts_player(player_index=1, difficulty=4):
 
     best_policy = PolicyValueNet(size, size, model_file = model_file, use_gpu=use_gpu)
     mcts_player = MCTSPlayer(best_policy.policy_value_fn, c_puct=8,
-                             n_playout=400) # modify n_playout to make easier models
+                             n_playout=n_playout) # modify n_playout to make easier models
     mcts_player.set_player_ind(player_index)
 
     return mcts_player
@@ -452,6 +440,11 @@ def testing_games_left():
     games = max(0, testing_games + 1 - test_games.count()) #calculate the number of games left
     return json.dumps({'games':games}), 200, {'ContentType':'application/json'} #return a dictionary
 
+@app.route('/')
+def start():
+    r = redirect_player(get_player(), 'start')
+    if r is not None:
+        return r
 
 @app.route('/consent')
 def consent():
@@ -667,7 +660,7 @@ def add_move(i, j):
     board = get_board(game)
 
     _, move_probs = compute_mcts_move(human, board, temp=move_eval_temp,
-                                         difficulty=game.game_difficulty)
+                                      n_playout=n_playout)
 
     # this breaks ties by always choosing the first.
     hint = int(np.argmax(move_probs))
@@ -728,27 +721,27 @@ def make_move(i, j):
 def get_probs_given_visits(visits, temp):
     return softmax(1.0/temp * np.log(np.array(visits) + 1e-10))
 
-def compute_mcts_move(human, board, temp=1, difficulty=4):
+def compute_mcts_move(human, board, temp=1, n_playout=400):
     
-    c = MctsCache.query.filter_by(human=human, board=json.dumps(board.states, sort_keys=True), difficulty=difficulty).first()
+    c = MctsCache.query.filter_by(human=human, board=json.dumps(board.states, sort_keys=True)).first()
     # c = MctsCache.query.filter_by(human=human, board=str(board.current_state())).first()
+    if c is not None and c.n_playout < n_playout:
+        db.session.delete(c)
+        db.session.commit()
+        c = None
+
     if c is None:
         # print('computing MCTS move')
-
-        if human:
-            mcts_player = get_mcts_player(1, difficulty=difficulty)
-        else:
-            mcts_player = get_mcts_player(2, difficulty=difficulty)
+        mcts_player = get_mcts_player(1, n_playout=n_playout)
 
         # move, scores = mcts_player.get_action(board, return_prob=True, temp=1)
         acts, visits = mcts_player.get_visits(board)
 
-        c = MctsCache(human=human, board=json.dumps(board.states, sort_keys=True), difficulty=difficulty, acts=json.dumps(acts), visits=json.dumps(visits))
+        c = MctsCache(human=human, board=json.dumps(board.states, sort_keys=True), n_playout=n_playout, acts=json.dumps(acts), visits=json.dumps(visits))
         
         # print('human: ', c.human)
         # print('board: ', c.board)
         # print('move: ', c.visits)
-        # print('difficulty: ', c.difficulty)
         
         db.session.add(c) # save to the database
         db.session.commit()
@@ -782,7 +775,7 @@ def get_hint():
     board = get_board(game)
 
     _, move_probs = compute_mcts_move(human, board, temp=1e-5,
-                                      difficulty=game.game_difficulty)
+                                      n_playout=n_playout)
 
     # this breaks ties by always choosing the first.
     hint_move = np.argmax(move_probs)
@@ -813,7 +806,7 @@ def get_ai_move():
     board = get_board(game)
 
     ai_move, _ = compute_mcts_move(human, board, temp=ai_move_temp,
-                                   difficulty=game.game_difficulty)
+                                   n_playout=n_playout)
 
     if human and game.player_is_white:
         color = 'white'
