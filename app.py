@@ -83,6 +83,7 @@ else:
                               'reward_for_correct': reward_for_correct,
                               'ai_move_temp': ai_move_temp,
                               'move_eval_temp': move_eval_temp,
+                              'n_playout': n_playout,
                               'random_uuid': random_uuid}, Dumper=Dumper))
 
 
