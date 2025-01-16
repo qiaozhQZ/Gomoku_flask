@@ -105,5 +105,5 @@ def save_to_db():
 
 if __name__ == "__main__":
     with app.app_context():
-        play_game(10, 5, n_playout=500)
+        play_game(300, 10, n_playout=1000)
     # create_cache(model_file_1, model_file_2, 5)
