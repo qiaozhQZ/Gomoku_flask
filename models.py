@@ -54,7 +54,6 @@ class Game(db.Model):
     player_is_white = db.Column(db.Boolean, nullable=False)
     player_won = db.Column(db.Boolean, nullable=True)
     training_game = db.Column(db.Boolean, nullable=False)
-    game_difficulty = db.Column(db.Integer, nullable=False)
     size = db.Column(db.Integer, default=8)
     moves = db.relationship('Move', backref='game', lazy=True)
 
@@ -99,7 +98,7 @@ class Log(db.Model):
 
 class MctsCache(db.Model):
     __table_args__ = (
-        UniqueConstraint("board", "human", "difficulty"),
+        UniqueConstraint("board", "human"),
     )
     id = db.Column(db.Integer, primary_key=True)
     board = db.Column(db.Text, nullable=False)
@@ -108,7 +107,7 @@ class MctsCache(db.Model):
     # scores = db.Column(db.Text, nullable=False)
     acts = db.Column(db.Text, nullable=False)
     visits = db.Column(db.Text, nullable=False)
-    difficulty = db.Column(db.Integer, nullable=False)
+    n_playout = db.Column(db.Integer, nullable=False)
 
 class TestItem(db.Model):
     ROTATIONS = [
