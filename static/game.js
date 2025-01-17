@@ -44,6 +44,7 @@ function make_ai_move(){
         $.post('get_ai_move').done(function(data){
             console.log('opponent move:');
             console.log(data);
+            hideLoader();
             $('#loc'+data['location']).removeClass('move_location');
             $('#loc'+data['location']).addClass(move_color + 'stone');
             flip_color()
@@ -70,6 +71,7 @@ function make_ai_move(){
 function click_handler(e){
     if (clickable){
         disable_clicking();
+        showLoader();
         $('.hintstone').removeClass('hintstone');
 
         let square = this;
@@ -142,8 +144,19 @@ function clear_board(){
     move_color = "black";
 }
 
-$().ready(function(){
 
+// Function to show the loader
+function showLoader() {
+    document.getElementById('ai-loader').style.display = 'block';
+}
+
+// Function to hide the loader
+function hideLoader() {
+    document.getElementById('ai-loader').style.display = 'none';
+}
+
+$().ready(function(){
+    hideLoader();
     window.addEventListener( "pageshow", function ( event ) {
         var historyTraversal = event.persisted ||
             ( typeof window.performance != "undefined" &&
@@ -210,6 +223,7 @@ $().ready(function(){
     if (move_color == "white"){
         disable_clicking();
         make_ai_move();
+        hideLoader();
     }
 
 });
