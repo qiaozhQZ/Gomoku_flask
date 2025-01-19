@@ -14,24 +14,31 @@
     <button id="next_button" hidden>Continue to survey</button>
 </div>
 
-<table class="board">
-    {%for i in range(0, size)%}
-    <tr>
-        {%for j in range(0, size)%}
-            <td>
-                {% if i * size + j in moves and moves[i * size + j] == "black" %}
-		    <div id="loc{{i * size + j}}" class="blackstone"></div>
-                {% elif i * size + j in moves and moves[i * size + j] == "white" %}
-		    <div id="loc{{i * size + j}}" class="whitestone"></div>
-                {% else %}
-                    <div id="loc{{i * size + j}}" class="move_location" 
-			 data-row="{{i}}", data-col="{{j}}"></div>
-                {% endif %}
-            </td>
+<div class="board-container">
+    {% include 'loading.html' %}  <!-- Include the loading component here -->
+    <table class="board">
+        {%for i in range(0, size)%}
+        <tr>
+            {%for j in range(0, size)%}
+                <td>
+                    {% if i * size + j in moves and moves[i * size + j] == "black" %}
+                <div id="loc{{i * size + j}}" class="blackstone"></div>
+                    {% elif i * size + j in moves and moves[i * size + j] == "white" %}
+                <div id="loc{{i * size + j}}" class="whitestone"></div>
+                    {% else %}
+                        <div id="loc{{i * size + j}}" class="move_location"
+                 data-row="{{i}}", data-col="{{j}}"></div>
+                    {% endif %}
+                </td>
+            {%endfor%}
+        </tr>
         {%endfor%}
-    </tr>
-    {%endfor%}
-</table>
+    </table>
+</div>
+
+{% endblock %}
+
+{% block footer %}
 
 
 {% endblock %}
