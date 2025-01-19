@@ -47,7 +47,7 @@ function make_ai_move(){
             hideLoader();
             $('#loc'+data['location']).removeClass('move_location');
             $('#loc'+data['location']).addClass(move_color + 'stone');
-            flip_color()
+            flip_color();
 
             $.post('move/' + data['i'] + '/' + data['j'])
                 .done(function(data){
@@ -70,18 +70,19 @@ function make_ai_move(){
 
 function click_handler(e){
     if (clickable){
-        disable_clicking();
         showLoader();
         $('.hintstone').removeClass('hintstone');
 
         let square = this;
         let row = $(square).attr('data-row');
         let col = $(square).attr('data-col');
+        disable_clicking();
 
         $('#score').html('--');
         $(square).off('click')
         $(square).removeClass('move_location');
         $(square).addClass(move_color + 'stone');
+
 
         flip_color();
 
@@ -193,6 +194,7 @@ $().ready(function(){
 
     $('#new_game_button').click(function(){
         // make a call to the new game
+        move_color = "black";
         $.ajax({
             type: "POST",
             url: '/new_game',
