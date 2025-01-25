@@ -41,6 +41,7 @@ function disable_clicking(){
 
 function make_ai_move(){
     if (move_color == 'white') {
+        disable_clicking();
         $.post('get_ai_move').done(function(data){
             console.log('opponent move:');
             console.log(data);
