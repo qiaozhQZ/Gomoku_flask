@@ -150,11 +150,31 @@ function clear_board(){
 // Function to show the loader
 function showLoader() {
     document.getElementById('ai-loader').style.display = 'block';
+    const end_game_button = document.querySelector('#end_game_button');
+    if (end_game_button) {
+      // If the element exists, disable it
+      end_game_button.disabled = true;
+    }
+    const start_game_button = document.querySelector('#new_game_button');
+    if (start_game_button) {
+      // If the element exists, disable it
+      start_game_button.disabled = true;
+    }
 }
 
 // Function to hide the loader
 function hideLoader() {
     document.getElementById('ai-loader').style.display = 'none';
+    const end_game_button = document.querySelector('#end_game_button');
+    if (end_game_button) {
+      // If the element exists, disable it
+      end_game_button.disabled = false;
+    }
+    const start_game_button = document.querySelector('#new_game_button');
+    if (start_game_button) {
+      // If the element exists, disable it
+      start_game_button.disabled = false;
+    }
 }
 
 $().ready(function(){
@@ -170,8 +190,6 @@ $().ready(function(){
         }
     });
 
-
-    enable_clicking();
     // $('#next_button').hide();
 
     $('#hint_button').click(function(e){
@@ -195,6 +213,7 @@ $().ready(function(){
 
     $('#new_game_button').click(function(){
         // make a call to the new game
+        disable_clicking();
         move_color = "black";
         $.ajax({
             type: "POST",
@@ -227,6 +246,9 @@ $().ready(function(){
         disable_clicking();
         make_ai_move();
         hideLoader();
+    }
+    else{
+        enable_clicking();
     }
 
 });
