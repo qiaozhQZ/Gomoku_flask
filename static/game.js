@@ -170,8 +170,6 @@ $().ready(function(){
         }
     });
 
-
-    enable_clicking();
     // $('#next_button').hide();
 
     $('#hint_button').click(function(e){
@@ -194,7 +192,6 @@ $().ready(function(){
     });
 
     $('#new_game_button').click(function(){
-        // make a call to the new game
         move_color = "black";
         $.ajax({
             type: "POST",
@@ -209,7 +206,6 @@ $().ready(function(){
                 $('#winning_dialog').hide();
                 $('#start_instructions').show();
                 $('#score').html('--');
-                enable_clicking();
             },
         });
 
@@ -223,10 +219,7 @@ $().ready(function(){
         });
     });
 
-    if (move_color == "white"){
-        disable_clicking();
-        make_ai_move();
-        hideLoader();
-    }
+    enable_clicking();
+
 
 });
