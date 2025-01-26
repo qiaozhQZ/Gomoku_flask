@@ -192,7 +192,6 @@ $().ready(function(){
     });
 
     $('#new_game_button').click(function(){
-        move_color = "black";
         $.ajax({
             type: "POST",
             url: '/new_game',
@@ -220,7 +219,14 @@ $().ready(function(){
         });
     });
 
-    enable_clicking();
+    if (move_color == "white"){
+        disable_clicking();
+        make_ai_move();
+        hideLoader();
+    }
+    else{
+        enable_clicking();
+    }
 
 
 });
