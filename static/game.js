@@ -205,6 +205,7 @@ $().ready(function(){
                 $('#toolbar').show();
                 $('#winning_dialog').hide();
                 $('#start_instructions').show();
+                enable_clicking();
                 $('#score').html('--');
             },
         });
