@@ -727,6 +727,7 @@ def compute_mcts_move(human, board, temp=1, n_playout=400):
     c = MctsCache.query.filter_by(human=human, board=json.dumps(board.states, sort_keys=True)).first()
     # c = MctsCache.query.filter_by(human=human, board=str(board.current_state())).first()
     if c is not None and c.n_playout < n_playout:
+        print(c, "to delete")
         db.session.delete(c)
         db.session.commit()
         c = None
@@ -739,6 +740,10 @@ def compute_mcts_move(human, board, temp=1, n_playout=400):
         acts, visits = mcts_player.get_visits(board)
 
         c = MctsCache(human=human, board=json.dumps(board.states, sort_keys=True), n_playout=n_playout, acts=json.dumps(acts), visits=json.dumps(visits))
+        existedCache = MctsCache.query.filter_by(human=human, board=json.dumps(board.states, sort_keys=True)).first()
+        if existedCache is not None:
+            db.session.delete(existedCache)
+            db.session.commit()
         
         # print('human: ', c.human)
         # print('board: ', c.board)
