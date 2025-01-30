@@ -48,7 +48,6 @@
                 <td>
                     {% if i * size + j in moves and moves[i * size + j] == "black" %}
                 <div id="loc{{i * size + j}}" class="blackstone" data-row="{{i}}" data-col="{{j}}"></div>
-                <div id="loc{{i * size + j}}" class="blackstone" ></div>
                     {% elif i * size + j in moves and moves[i * size + j] == "white" %}
                 <div id="loc{{i * size + j}}" class="whitestone" data-row="{{i}}" data-col="{{j}}"></div>
                     {% else %}
