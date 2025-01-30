@@ -441,6 +441,22 @@ def testing_games_left():
     games = max(0, testing_games + 1 - test_games.count()) #calculate the number of games left
     return json.dumps({'games':games}), 200, {'ContentType':'application/json'} #return a dictionary
 
+
+@app.route('/end_game', methods=['POST'])
+def end_game():
+    try:
+        game_id = session.get('game_id')
+        if game_id:
+            game = Game.query.get(game_id)
+            if game and game.player_won is None:
+                # Mark the game as ended
+                game.player_won = False  # Or handle as needed
+                db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error ending game: {e}")
+        return jsonify({'success': False}), 500
 @app.route('/')
 def start():
     r = redirect_player(get_player(), 'start')
@@ -663,6 +679,17 @@ def add_move(i, j):
     _, move_probs = compute_mcts_move(human, board, temp=move_eval_temp,
                                       n_playout=n_playout)
 
+    game2 = get_game(player)
+    board2 = get_board(game2)
+
+    print('board1', board.states.items())
+    print('board2', board2.states.items())
+
+    if len(set(board.states.items()) - set(board2.states.items())) != 0:
+        print("boards out of sync")
+        # return a json error that boards are out sync
+        return jsonify({'error': 'boards are out of sync'}), 500
+
     # this breaks ties by always choosing the first.
     hint = int(np.argmax(move_probs))
 
@@ -701,8 +728,8 @@ def add_move(i, j):
     else:
         color = 'black'
 
-    return {'end': end, 'winner': winner, 'score': score, 'color': color,
-            'move': move, 'hint': hint}
+    return jsonify({'end': end, 'winner': winner, 'score': score, 'color': color,
+            'move': move, 'hint': hint})
 
 @app.route('/log/', methods=['POST'])
 def log():
@@ -717,7 +744,7 @@ def log():
 
 @app.route('/move/<i>/<j>', methods=['POST'])
 def make_move(i, j):
-    return jsonify(add_move(i, j))
+    return add_move(i, j)
 
 def get_probs_given_visits(visits, temp):
     return softmax(1.0/temp * np.log(np.array(visits) + 1e-10))
@@ -727,7 +754,6 @@ def compute_mcts_move(human, board, temp=1, n_playout=400):
     c = MctsCache.query.filter_by(human=human, board=json.dumps(board.states, sort_keys=True)).first()
     # c = MctsCache.query.filter_by(human=human, board=str(board.current_state())).first()
     if c is not None and c.n_playout < n_playout:
-        print(c, "to delete")
         db.session.delete(c)
         db.session.commit()
         c = None
@@ -740,10 +766,6 @@ def compute_mcts_move(human, board, temp=1, n_playout=400):
         acts, visits = mcts_player.get_visits(board)
 
         c = MctsCache(human=human, board=json.dumps(board.states, sort_keys=True), n_playout=n_playout, acts=json.dumps(acts), visits=json.dumps(visits))
-        existedCache = MctsCache.query.filter_by(human=human, board=json.dumps(board.states, sort_keys=True)).first()
-        if existedCache is not None:
-            db.session.delete(existedCache)
-            db.session.commit()
         
         # print('human: ', c.human)
         # print('board: ', c.board)
@@ -814,6 +836,17 @@ def get_ai_move():
     ai_move, _ = compute_mcts_move(human, board, temp=ai_move_temp,
                                    n_playout=n_playout)
 
+    game2 = get_game(player)
+    board2 = get_board(game2)
+
+    print('board1', board.states.items())
+    print('board2', board2.states.items())
+
+    if len(set(board.states.items()) - set(board2.states.items())) != 0:
+        print("boards out of sync")
+        # return a json error that boards are out sync
+        return jsonify({'error': 'boards are out of sync'}), 500
+
     if human and game.player_is_white:
         color = 'white'
     elif not human and not game.player_is_white:
@@ -826,6 +859,26 @@ def get_ai_move():
 
     return jsonify({'color': color, 'location': int(ai_move),
                     'i': i, 'j': j})
+
+
+@app.route('/get_moves', methods=['GET'])
+def get_moves():
+    game = get_game(get_player())
+    num_moves = len(game.moves)
+
+    return jsonify({
+        'moves': num_moves
+    }), 200
+
+
+@app.route('/rollback_transaction', methods=['POST'])
+def rollback_transaction():
+    try:
+        db.session.rollback()
+        return jsonify({'success': True})
+    except:
+        return jsonify({'success': False}), 500
+
 
 @app.route('/<path:path>')
 def send_files(path):
