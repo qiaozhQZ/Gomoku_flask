@@ -173,7 +173,7 @@ def get_player(external_vars=""):
                                 (num_ctr, random(), 'control'),
                                 (num_dly, random(), 'delayed')])[0][2] 
 
-            condition = "delayed"
+            #condition = "delayed"
             external_vars = request.query_string.decode()
             player = Player(username=username, condition=condition,
                             external_vars=external_vars)
