@@ -1,6 +1,5 @@
 $.ajaxSetup({
     type: 'POST',
-    timeout: 30000, // 30 seconds timeout
     error: function (xhr, status, err) {
         // Get error message from server response or use default
         const serverError = xhr.responseJSON?.error;
@@ -12,10 +11,6 @@ $.ajaxSetup({
         // Show error to user
         alert(errorMsg);
 
-        // Only reload on timeout
-        if (status === "timeout") {
-            window.location.reload();
-        }
     }
 });
 
