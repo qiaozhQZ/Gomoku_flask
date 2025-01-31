@@ -1,17 +1,23 @@
 $.ajaxSetup({
     type: 'POST',
-    timeout: 30000, // set default timeout to 15 sec.
-    error: function (request, status, err) {
-        if (status == "timeout") {
-            // timeout -> reload the page and try again
-            console.log("timeout");
-        } else {
-            // another error occured
-            alert("error: " + request + status + err);
+    timeout: 30000, // 30 seconds timeout
+    error: function (xhr, status, err) {
+        // Get error message from server response or use default
+        const serverError = xhr.responseJSON?.error;
+        const errorMsg = serverError || "Something went wrong. Please try again!";
+
+        // Don't handle aborted requests
+        if (status === "abort") return;
+
+        // Show error to user
+        alert(errorMsg);
+
+        // Only reload on timeout
+        if (status === "timeout") {
+            window.location.reload();
         }
-        window.location.reload();
     }
-})
+});
 
 let xhrPool = [];
 let abortController = new AbortController();
@@ -72,7 +78,7 @@ function disable_clicking() {
 }
 
 function make_ai_move() {
-    showLoader();
+    show_loader();
     disable_clicking();
     if (move_color == 'white') {
         disable_clicking();
@@ -85,16 +91,16 @@ function make_ai_move() {
             $.post('move/' + data['i'] + '/' + data['j'])
                 .done(function (data) {
                     $(document).trigger('move_complete', data);
-                            console.log('opp move done');
-                            console.log(data);
-                            enable_clicking();
-                            hideLoader();
-                            if (data['end']) {
-                                display_winner(data['winner']);
+                    console.log('opp move done');
+                    console.log(data);
+                    enable_clicking();
+                    hide_loader();
+                    if (data['end']) {
+                        display_winner(data['winner']);
                     }
 
                 })
-                .error(function (data) {
+                .fail(function (data) {
                     window.location.reload();
                 });
 
@@ -102,54 +108,15 @@ function make_ai_move() {
         });
     } else {
         enable_clicking();
-        hideLoader();
+        hide_loader();
     }
 
 }
 
-function initializeBoard() {
-    showLoader();
-    disable_clicking();
-    $.ajax({
-        type: "GET",
-        url: '/get_moves',
-        contentType: "application/json",
-        dataType: 'json',
-        success: function (resp) {
-            // Clear the board first
-            clear_board();
-
-            // Update the board state based on the response
-            if (resp.moves && resp.moves.length > 0) {
-                resp.moves.forEach(move => {
-                    const location = move.location;
-                    const color = move.player_move ? 'black' : 'white';
-                    $(`#loc${location}`).removeClass('move_location')
-                        .addClass(`${color}stone`);
-                });
-            }
-
-            // Ensure all board elements have data-row and data-col attributes
-            $('.move_location').each(function () {
-                const location = $(this).attr('id').replace('loc', '');
-                const row = Math.floor(location / boardHeight); // Assuming boardHeight is defined
-                const col = location % boardWidth; // Assuming boardWidth is defined
-                $(this).attr('data-row', row).attr('data-col', col);
-            });
-
-            hideLoader();
-            enable_clicking(); // Enable clicks only after the board is ready
-        },
-        error: function (xhr, status, error) {
-            hideLoader();
-            console.error("Error initializing board:", error);
-        }
-    });
-}
 
 function click_handler(e) {
     if (clickable) {
-        showLoader();
+        show_loader();
         disable_clicking();
         $('.hintstone').removeClass('hintstone');
 
@@ -179,7 +146,7 @@ function click_handler(e) {
                     make_ai_move();
                 }
             })
-            .error(function (data) {
+            .fail(function (data) {
                 window.location.reload();
             });
     }
@@ -227,13 +194,13 @@ function clear_board() {
 
 
 // Function to show the loader
-function showLoader() {
+function show_loader() {
     disable_clicking();
     document.getElementById('ai-loader').style.display = 'block';
 }
 
 // Function to hide the loader
-function hideLoader() {
+function hide_loader() {
     document.getElementById('ai-loader').style.display = 'none';
 }
 
@@ -248,7 +215,7 @@ function isMovesOdd() {
 }
 
 $().ready(function () {
-    showLoader();
+    show_loader();
     disable_clicking();
     var is_move_odd = false;
     $.ajax({
@@ -264,11 +231,11 @@ $().ready(function () {
     });
     if (isMovesOdd() || is_move_odd) {
         disable_clicking();
-        showLoader();
+        show_loader();
         make_ai_move();
 
     } else {
-        hideLoader();
+        hide_loader();
         enable_clicking();
     }
     window.addEventListener("pageshow", function (event) {
@@ -306,37 +273,11 @@ $().ready(function () {
 
     $('#new_game_button').click(function () {
         clear_board();
-        hideLoader();
+        hide_loader();
         // Abort any ongoing requests
         abortController.abort();
         abortController = new AbortController();
 
-        // End the previous game
-        fetch('/end_game', {
-            method: 'POST',
-            signal: abortController.signal,
-        }).then(response => {
-            if (!response.ok) {
-                console.error("Failed to end previous game");
-            }
-        }).catch(error => {
-            if (error.name !== 'AbortError') {
-                console.error("Error ending previous game:", error);
-            }
-        });
-        // Roll back any incomplete transactions
-        fetch('/rollback_transaction', {
-            method: 'POST',
-            signal: abortController.signal,
-        }).then(response => {
-            if (!response.ok) {
-                console.error("Rollback failed");
-            }
-        }).catch(error => {
-            if (error.name !== 'AbortError') {
-                console.error("Rollback error:", error);
-            }
-        });
         clear_board();
         // initializeBoard();
         move_color = 'black';
@@ -352,7 +293,7 @@ $().ready(function () {
                 $('#toolbar').show();
                 $('#winning_dialog').hide();
                 $('#start_instructions').show();
-                hideLoader();
+                hide_loader();
                 enable_clicking();
                 $('#score').html('--');
             },
