@@ -1,4 +1,4 @@
-function disable_review(){
+function disable_review() {
     console.log('disable?');
     $('#new_game_button').hide();
     $('#end_game_button').show();
@@ -7,21 +7,23 @@ function disable_review(){
     $('#start_instructions').show();
 }
 
-function enable_review(){
+function enable_review() {
     $('#new_game_button').show();
     $('#end_game_button').hide();
     $('#end_game_button').hide();
     $('#review').show();
     $('#start_instructions').hide();
+    $('.move_location').removeClass('make_clickable');
+    $('.move_location').off('click', click_handler);
+    hide_loader();
 
-    if (current_idx % 2 == 0){
+    if (current_idx % 2 == 0) {
         $('#score').html(score_seq[current_idx]);
         $('#loc' + move_seq[current_idx]).addClass("newstone");
         $('#hint').prop("disabled", false);
-    }
-    else{
+    } else {
         $('#score').html('--');
-        $('#hint').prop("disabled",true);
+        $('#hint').prop("disabled", true);
     }
 
 }
@@ -30,63 +32,63 @@ $().ready(function(){
 
     disable_review();
 
-    function prev_move(){
-        if (current_idx >= 0){
-            $('.hintstone').removeClass('hintstone');	
+    function prev_move() {
+        if (current_idx >= 0) {
+            $('.hintstone').removeClass('hintstone');
             $('#loc' + move_seq[current_idx]).removeClass(color_seq[current_idx] + "stone");
             current_idx -= 1;
 
-            if (current_idx >= 0 && current_idx % 2 == 0){
+            if (current_idx >= 0 && current_idx % 2 == 0) {
                 $('#score').html(score_seq[current_idx]);
                 $('#hint').prop("disabled", false);
-            }
-            else{
+            } else {
                 $('#score').html('--');
                 $('#hint').prop("disabled", true);
             }
 
             $.ajax({
-                    type: "POST",
-                    url: '/log',
-                    data: JSON.stringify({'event':'previous'}),
-                    contentType: "application/json",
-                    dataType: 'json',
-                    success: function(resp) {},
+                type: "POST",
+                url: '/log',
+                data: JSON.stringify({'event': 'previous'}),
+                contentType: "application/json",
+                dataType: 'json',
+                success: function (resp) {
+                },
             });
         }
     }
 
-    function next_move(){
-        if (current_idx < move_seq.length - 1){
-            $('.hintstone').removeClass('hintstone');	
+    function next_move() {
+        if (current_idx < move_seq.length - 1) {
+            $('.hintstone').removeClass('hintstone');
             current_idx += 1;
             $('#loc' + move_seq[current_idx]).addClass(color_seq[current_idx] + "stone");
 
-            if (current_idx >= 0 && current_idx % 2 == 0){
+            if (current_idx >= 0 && current_idx % 2 == 0) {
                 $('#score').html(score_seq[current_idx]);
                 $('#hint').prop("disabled", false);
-            }
-            else{
+            } else {
                 $('#score').html('--');
                 $('#hint').prop("disabled", true);
             }
 
             $.ajax({
-                    type: "POST",
-                    url: '/log',
-                    data: JSON.stringify({'event':'next'}),
-                    contentType: "application/json",
-                    dataType: 'json',
-                    success: function(resp) {},
+                type: "POST",
+                url: '/log',
+                data: JSON.stringify({'event': 'next'}),
+                contentType: "application/json",
+                dataType: 'json',
+                success: function (resp) {
+                },
             });
         }
     }
-    
-    $('#previous').click(function(){
+
+    $('#previous').click(function () {
         $('.newstone').removeClass('newstone');
         prev_move();
 
-        if (current_idx % 2 == 1){
+        if (current_idx % 2 == 1) {
             prev_move();
         }
 
@@ -95,40 +97,41 @@ $().ready(function(){
 
     });
 
-    $('#next').click(function(){
+    $('#next').click(function () {
         $('.newstone').removeClass('newstone');
         next_move();
 
-        if (current_idx % 2 == 1){
+        if (current_idx % 2 == 1) {
             next_move();
         }
 
-        if (current_idx % 2 == 0){
+        if (current_idx % 2 == 0) {
             $('#loc' + move_seq[current_idx]).addClass("newstone");
         }
     });
 
-    $('#hint').click(function(){
-        if (current_idx % 2 == 0){
-            $('.hintstone').removeClass('hintstone');	
-            $('#loc'+hint_seq[current_idx]).addClass('hintstone');	
+    $('#hint').click(function () {
+        if (current_idx % 2 == 0) {
+            $('.hintstone').removeClass('hintstone');
+            $('#loc' + hint_seq[current_idx]).addClass('hintstone');
             $.ajax({
-                    type: "POST",
-                    url: '/log',
-                    data: JSON.stringify({'event':'hint', 'location': hint_seq[current_idx+1]}),
-                    contentType: "application/json",
-                    dataType: 'json',
-                    success: function(resp) {},
+                type: "POST",
+                url: '/log',
+                data: JSON.stringify({'event': 'hint', 'location': hint_seq[current_idx + 1]}),
+                contentType: "application/json",
+                dataType: 'json',
+                success: function (resp) {
+                },
             });
         }
     });
 
-    $('#end_game_button').click(function(){
+    $('#end_game_button').click(function () {
         disable_clicking();
         $(document).trigger('game_end');
     });
 
-    $(document).on("new_game", function() {
+    $(document).on("new_game", function () {
         disable_review();
         move_seq = [];
         color_seq = [];
@@ -137,7 +140,11 @@ $().ready(function(){
         current_idx = -1;
     });
 
+    window.activeAIRequest = null;
     $(document).on("game_end", function() {
+        if (window.activeAIRequest) {
+            window.activeAIRequest.abort();
+        }
         $.ajax({
             type: "POST",
             url: '/new_game',

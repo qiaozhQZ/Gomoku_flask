@@ -4,7 +4,9 @@ function disable_review(){
 }
 
 function enable_review(){
-    $('#review').show()
+    disable_clicking();
+    $('#review').show();
+    hide_loader();
 }
 
 $().ready(function(){

@@ -5,6 +5,7 @@ import json
 import datetime
 import torch
 import yaml
+from sympy.integrals.risch import NonElementaryIntegral
 from yaml import Loader, Dumper
 from random import random
 from random import choice
@@ -172,7 +173,7 @@ def get_player(external_vars=""):
                                 (num_ctr, random(), 'control'),
                                 (num_dly, random(), 'delayed')])[0][2] 
 
-            # condition = "delayed"
+            #condition = "delayed"
             external_vars = request.query_string.decode()
             player = Player(username=username, condition=condition,
                             external_vars=external_vars)
@@ -302,8 +303,27 @@ def get_mcts_player(player_index=1, n_playout=400):
 
 @app.route('/new_game', methods = ['POST'])
 def new_game():
-    session.pop('game_id', None)
-    return json.dumps({}), 200, {'ContentType':'application/json'}
+    # session.pop('game_id', None)
+    # return json.dumps({}), 200, {'ContentType':'application/json'}
+
+    try:
+        # Get current game if exists
+        current_game = None
+        if 'game_id' in session:
+            current_game = Game.query.get(session['game_id'])
+
+        # End current game properly
+        if current_game and current_game.player_won is None:
+            current_game.player_won = False  # Mark as ended
+            db.session.commit()
+
+        # Clear session and start fresh
+        session.pop('game_id', None)
+        return json.dumps({"success": True}), 200, {'ContentType': 'application/json'}
+
+    except Exception as e:
+        db.session.rollback()
+        return json.dumps({"success": False, "error": str(e)}), 500, {'ContentType': 'application/json'}
 
 
 @app.route('/advance_stage', methods = ['POST']) #only accepting 'POST'
@@ -440,6 +460,7 @@ def testing_games_left():
     ############# modify the number for testing #############
     games = max(0, testing_games + 1 - test_games.count()) #calculate the number of games left
     return json.dumps({'games':games}), 200, {'ContentType':'application/json'} #return a dictionary
+
 
 @app.route('/')
 def start():
@@ -659,9 +680,37 @@ def add_move(i, j):
         human = True
 
     board = get_board(game)
+    def is_client_connected():
+        return not request.environ.get('werkzeug.server.shutdown')
+
+    # Final check before committing
+    if not is_client_connected() or game.player_won is not None:
+        return jsonify({'status': 'aborted'}), 499
+
+        # Check if game is still active
+    if not game or game.player_won is not None:
+        return jsonify({'error': 'Game no longer active'}), 410
+
+        # Check client connection before processing
+    if request.environ.get('werkzeug.server.shutdown'):
+        return jsonify({'status': 'aborted'}), 499
 
     _, move_probs = compute_mcts_move(human, board, temp=move_eval_temp,
                                       n_playout=n_playout)
+
+    game2 = get_game(player)
+    board2 = get_board(game2)
+
+    print('board1', board.states.items())
+    print('board2', board2.states.items())
+
+    if game2 is None or game2.player_won is not None:
+        return jsonify({'end': True, 'winner': None})
+
+    if len(set(board.states.items()) - set(board2.states.items())) != 0 and game2 is not None:
+        print("boards out of sync")
+        # return a json error that boards are out sync
+        return jsonify({'error': 'boards are out of sync'}), 500
 
     # this breaks ties by always choosing the first.
     hint = int(np.argmax(move_probs))
@@ -682,6 +731,21 @@ def add_move(i, j):
                        score=score, hint_location=hint,
                        raw_move_scores=str(move_probs))
 
+    def is_client_connected():
+        return not request.environ.get('werkzeug.server.shutdown')
+
+    # Final check before committing
+    if not is_client_connected() or game2.player_won is not None:
+        return jsonify({'status': 'aborted'}), 499
+
+        # Check if game is still active
+    if not game2 or game2.player_won is not None:
+        return jsonify({'error': 'Game no longer active'}), 410
+
+        # Check client connection before processing
+    if request.environ.get('werkzeug.server.shutdown'):
+        return jsonify({'status': 'aborted'}), 499
+
     db.session.add(player_move)
     db.session.commit()
 
@@ -701,8 +765,8 @@ def add_move(i, j):
     else:
         color = 'black'
 
-    return {'end': end, 'winner': winner, 'score': score, 'color': color,
-            'move': move, 'hint': hint}
+    return jsonify({'end': end, 'winner': winner, 'score': score, 'color': color,
+            'move': move, 'hint': hint})
 
 @app.route('/log/', methods=['POST'])
 def log():
@@ -717,7 +781,7 @@ def log():
 
 @app.route('/move/<i>/<j>', methods=['POST'])
 def make_move(i, j):
-    return jsonify(add_move(i, j))
+    return add_move(i, j)
 
 def get_probs_given_visits(visits, temp):
     return softmax(1.0/temp * np.log(np.array(visits) + 1e-10))
@@ -800,14 +864,36 @@ def get_ai_move():
     player = get_player()
     game = get_game(player)
 
+    # Validate game state before processing
+    if not game or game.player_won is not None:
+        db.session.rollback()
+        return jsonify({'error': 'Game has ended'}), 410  # 410 Gone status
+
     human = False
     if len(game.moves) % 2 == 0:
         human = True
 
     board = get_board(game)
 
+    if game is None or game.player_won is not None:
+        return jsonify({'end': True, 'winner': None})
+
     ai_move, _ = compute_mcts_move(human, board, temp=ai_move_temp,
                                    n_playout=n_playout)
+
+    game2 = get_game(player)
+    board2 = get_board(game2)
+
+    print('board1', board.states.items())
+    print('board2', board2.states.items())
+
+    if game2 is None or game2.player_won is not None:
+        return jsonify({'end': True, 'winner': None})
+
+    if len(set(board.states.items()) - set(board2.states.items())) != 0 and game2 is not None:
+        print("boards out of sync")
+        # return a json error that boards are out sync
+        return jsonify({'error': 'boards are out of sync'}), 500
 
     if human and game.player_is_white:
         color = 'white'
@@ -821,6 +907,26 @@ def get_ai_move():
 
     return jsonify({'color': color, 'location': int(ai_move),
                     'i': i, 'j': j})
+
+
+@app.route('/get_moves', methods=['GET'])
+def get_moves():
+    game = get_game(get_player())
+    num_moves = len(game.moves)
+
+    return jsonify({
+        'moves': num_moves
+    }), 200
+
+
+@app.route('/rollback_transaction', methods=['POST'])
+def rollback_transaction():
+    try:
+        db.session.rollback()
+        return jsonify({'success': True})
+    except:
+        return jsonify({'success': False}), 500
+
 
 @app.route('/<path:path>')
 def send_files(path):
