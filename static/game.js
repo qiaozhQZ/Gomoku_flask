@@ -29,11 +29,17 @@ $.ajaxSetup({
         }
     }
 });
-
+window.skipRollback = false;
 $(window).on('beforeunload', function () {
+    // Skip rollback if the flag is set
+    if (window.skipRollback) {
+        return;
+    }
+
     xhrPool.forEach(function (jqXHR) {
         jqXHR.abort();
     });
+
     return rollbackTransaction();
 });
 

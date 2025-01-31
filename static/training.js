@@ -6,6 +6,7 @@ $().ready(function(){
         contentType: "application/json",
         dataType: 'json',
         success: function(time_left) {
+            debugger;
             console.log(time_left);
             setTimeout(function(){
                 $.ajax({
@@ -15,6 +16,7 @@ $().ready(function(){
                     contentType: 'application/json',
                     dataType: 'json',
                     success: function(resp) {
+                        window.skipRollback = true;
                         window.location.href = resp['next_page'];
                     },
                 });
