@@ -47,6 +47,18 @@ $().ready(function(){
         next_move();
     });
 
+    $('#first').click(function () {
+        current_idx = 0;
+        $('#loc' + move_seq[current_idx]).addClass(color_seq[current_idx] + "stone");
+        $('#score').html(score_seq[current_idx]);
+    });
+
+    $('#last').click(function () {
+        current_idx = move_seq.length - 1;
+        $('#loc' + move_seq[current_idx]).addClass(color_seq[current_idx] + "stone");
+        $('#score').html(score_seq[current_idx]);
+    });
+
     $('#hint').click(function(){
         if (current_idx < move_seq.length - 1){
             $('.hintstone').removeClass('hintstone');	
