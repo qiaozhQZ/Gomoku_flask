@@ -48,7 +48,7 @@ $().ready(function(){
     });
 
     $('#first').click(function () {
-        current_idx = 0;
+        current_idx = 1;
         $('#loc' + move_seq[current_idx]).addClass(color_seq[current_idx] + "stone");
         $('#score').html(score_seq[current_idx]);
     });

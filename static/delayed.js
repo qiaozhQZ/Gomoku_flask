@@ -110,7 +110,7 @@ $().ready(function(){
 
     $('#first').click(function () {
         $('.newstone').removeClass('newstone');
-        while (current_idx >= 0) {
+        while (current_idx >= 1) {
             prev_move();
         }
         $.ajax({
@@ -122,7 +122,7 @@ $().ready(function(){
             success: function (resp) {
             },
         });
-        ('#loc' + move_seq[current_idx]).addClass("newstone");
+        $('#loc' + move_seq[current_idx]).addClass("newstone");
     });
 
     $('#last').click(function () {
@@ -139,7 +139,10 @@ $().ready(function(){
             success: function (resp) {
             },
         });
-        ('#loc' + move_seq[current_idx]).addClass("newstone");
+        if (current_idx % 2 == 0) {
+            $('#loc' + move_seq[current_idx]).addClass("newstone");
+        }
+        $('#loc' + move_seq[current_idx]);
     });
 
     $('#hint').click(function () {
