@@ -143,6 +143,7 @@ function click_handler(e) {
 
                 if (data['end']) {
                     display_winner(data['winner']);
+                    hide_loader();
                 } else {
                     make_ai_move();
                 }
