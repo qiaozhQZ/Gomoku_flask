@@ -45,16 +45,6 @@ $().ready(function(){
                 $('#score').html('--');
                 $('#hint').prop("disabled", true);
             }
-
-            $.ajax({
-                type: "POST",
-                url: '/log',
-                data: JSON.stringify({'event': 'previous'}),
-                contentType: "application/json",
-                dataType: 'json',
-                success: function (resp) {
-                },
-            });
         }
     }
 
@@ -71,16 +61,6 @@ $().ready(function(){
                 $('#score').html('--');
                 $('#hint').prop("disabled", true);
             }
-
-            $.ajax({
-                type: "POST",
-                url: '/log',
-                data: JSON.stringify({'event': 'next'}),
-                contentType: "application/json",
-                dataType: 'json',
-                success: function (resp) {
-                },
-            });
         }
     }
 
@@ -94,7 +74,15 @@ $().ready(function(){
 
         $('#loc' + move_seq[current_idx]).addClass("newstone");
 
-
+        $.ajax({
+            type: "POST",
+            url: '/log',
+            data: JSON.stringify({'event': 'previous'}),
+            contentType: "application/json",
+            dataType: 'json',
+            success: function (resp) {
+            },
+        });
     });
 
     $('#next').click(function () {
@@ -108,6 +96,50 @@ $().ready(function(){
         if (current_idx % 2 == 0) {
             $('#loc' + move_seq[current_idx]).addClass("newstone");
         }
+
+        $.ajax({
+            type: "POST",
+            url: '/log',
+            data: JSON.stringify({'event': 'next'}),
+            contentType: "application/json",
+            dataType: 'json',
+            success: function (resp) {
+            },
+        });
+    });
+
+    $('#first').click(function () {
+        $('.newstone').removeClass('newstone');
+        while (current_idx >= 0) {
+            prev_move();
+        }
+        $.ajax({
+            type: "POST",
+            url: '/log',
+            data: JSON.stringify({'event': 'first'}),
+            contentType: "application/json",
+            dataType: 'json',
+            success: function (resp) {
+            },
+        });
+        ('#loc' + move_seq[current_idx]).addClass("newstone");
+    });
+
+    $('#last').click(function () {
+        $('.newstone').removeClass('newstone');
+        while (current_idx < move_seq.length - 1) {
+            next_move();
+        }
+        $.ajax({
+            type: "POST",
+            url: '/log',
+            data: JSON.stringify({'event': 'last'}),
+            contentType: "application/json",
+            dataType: 'json',
+            success: function (resp) {
+            },
+        });
+        ('#loc' + move_seq[current_idx]).addClass("newstone");
     });
 
     $('#hint').click(function () {
