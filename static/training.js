@@ -6,7 +6,6 @@ $().ready(function(){
         contentType: "application/json",
         dataType: 'json',
         success: function(time_left) {
-            debugger;
             console.log(time_left);
             setTimeout(function(){
                 $.ajax({
