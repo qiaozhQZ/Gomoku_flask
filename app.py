@@ -290,6 +290,8 @@ def get_mcts_player(player_index=1, n_playout=400):
     # best_policy = PolicyValueNetNumpy(size, size, policy_param)
 
     use_gpu = torch.cuda.is_available()
+    gpu_id = 2
+    torch.cuda.set_device(gpu_id)
     # use_gpu = False
     # print('using GPU: ', use_gpu)
 
