@@ -3,6 +3,7 @@ from flask import Flask
 import os
 import sys
 import json
+import torch
 import numpy as np
 from tqdm import tqdm
 
@@ -27,6 +28,10 @@ with app.app_context():
 
 # difficulty
 
+use_gpu = torch.cuda.is_available()
+gpu_id = 3
+torch.cuda.set_device(gpu_id)
+
 def get_mcts_player(model_file, player_index=1, n_playout=400):
     board_width, board_height, n = 8, 8, 5
     board = Board(width=board_width, height=board_height, n_in_row=n)
@@ -34,7 +39,7 @@ def get_mcts_player(model_file, player_index=1, n_playout=400):
     # make a random move on the board
     # game = Game(board)
 
-    policy = PolicyValueNet(board_width, board_height, model_file=model_file, use_gpu=False)
+    policy = PolicyValueNet(board_width, board_height, model_file=model_file, use_gpu=use_gpu)
     mcts_player = MCTSPlayer(policy.policy_value_fn,
           alpha=0.15, epsilon=0.25, c_puct=3.0,
                              n_playout=n_playout, is_selfplay=0)
