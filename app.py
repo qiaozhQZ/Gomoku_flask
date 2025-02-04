@@ -71,7 +71,7 @@ else:
     # numbers for launching the experiment
     training_time = 2100
     test_item_time = 60
-    reward_for_correct = 0.25
+    reward_for_correct = 0.1
     ai_move_temp = 1.0
     n_playout = 400
     move_eval_temp = 1.0
