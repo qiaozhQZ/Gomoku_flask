@@ -45,8 +45,17 @@
 <div class="board-container">
     {% include 'loading.html' %}
     <table class="board">
+        <!-- Column headers -->
+        <tr>
+            <td class="corner"></td>
+            {%for j in range(0, size)%}
+                <td class="column-header">{{chr(ord('A') + j)}}</td>
+            {%endfor%}
+        </tr>
         {%for i in range(0, size)%}
         <tr>
+            <!-- Row header -->
+            <td class="row-header">{{i + 1}}</td>
             {%for j in range(0, size)%}
                 <td>
                     {% if i * size + j in moves and moves[i * size + j] == "black" %}
@@ -62,6 +71,7 @@
         {%endfor%}
     </table>
 </div>
+
 
 {% endblock %}
 

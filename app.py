@@ -5,6 +5,7 @@ import json
 import datetime
 import torch
 import yaml
+import os
 from sympy.integrals.risch import NonElementaryIntegral
 from yaml import Loader, Dumper
 from random import random
@@ -31,6 +32,9 @@ from models import Log
 from models import MctsCache
 from models import TestItem
 
+from google import genai
+from google.genai import types
+
 sys.path.append('../AlphaZero_Gomoku')
 
 from game import Board  # noqa: E402
@@ -39,11 +43,27 @@ from mcts_alphaZero import softmax  # noqa: E402
 # from policy_value_net_numpy import PolicyValueNetNumpy  # noqa: E402
 from policy_value_net_pytorch import PolicyValueNet 
 
+print("Checking GEMINI_API_KEY environment variable...")
+api_key = os.getenv('GEMINI_API_KEY')
+print(f"   API key value: {api_key[:10] if api_key else 'None'}...")
+
+if not api_key:
+    print("✗ GEMINI_API_KEY environment variable is not set")
+    GEMINI_AVAILABLE = False
+    print("Warning: GEMINI_API_KEY not set. LLM features will be disabled.")
+else:
+    print("✓ API key found - LLM features will be available")
+    GEMINI_AVAILABLE = True
+
+print(f"Final GEMINI_AVAILABLE status: {GEMINI_AVAILABLE}")
 
 # Setup the Flask app with the database
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 db.init_app(app)
+
+# Add ord and chr functions to Jinja2 environment for coordinate labels
+app.jinja_env.globals.update(ord=ord, chr=chr)
 
 
 # change the key to clear cookies
@@ -163,15 +183,8 @@ def get_player(external_vars=""):
         if Player.query.filter_by(username=username).count() > 0:
             player = Player.query.filter_by(username=username).first() # get the player with a username if existed
         else:
-            # query the numer of people in each condition
-            num_imm = Player.query.filter_by(condition='immediate').count()
-            num_ctr = Player.query.filter_by(condition='control').count()
-            num_dly = Player.query.filter_by(condition='delayed').count() # add delayed condition
-
-            #assign into different conditions to balance
-            condition = sorted([(num_imm, random(), 'immediate'), 
-                                (num_ctr, random(), 'control'),
-                                (num_dly, random(), 'delayed')])[0][2] 
+            # Always assign to immediate feedback condition
+            condition = 'immediate' 
 
             #condition = "delayed"
             external_vars = request.query_string.decode()
@@ -291,7 +304,8 @@ def get_mcts_player(player_index=1, n_playout=400):
 
     use_gpu = torch.cuda.is_available()
     gpu_id = 2
-    torch.cuda.set_device(gpu_id)
+    if use_gpu:
+        torch.cuda.set_device(gpu_id)
     # use_gpu = False
     # print('using GPU: ', use_gpu)
 
@@ -345,15 +359,7 @@ def advance_stage():
         p.instructions_start = datetime.datetime.utcnow()
         p.stage = 'instructions'
     elif p.stage == 'instructions' and request.get_json().get('page')== 'instructions':
-        p.pretest_start = datetime.datetime.utcnow()
-        p.stage = 'pretest_start'
-    elif p.stage == 'pretest_start' and request.get_json().get('page') == 'pretest_start':
-        p.pretest_result_start = datetime.datetime.utcnow()
-        p.stage = 'pretest'
-    elif p.stage == 'pretest' and request.get_json().get('page') == 'pretest':
-        p.pretest_result_start = datetime.datetime.utcnow()
-        p.stage = 'pretest_result'
-    elif p.stage == 'pretest_result' and request.get_json().get('page') == 'pretest_result':
+        # Skip pretest and go directly to training
         p.training_start = datetime.datetime.utcnow()
         p.stage = 'training'
     elif p.stage == 'training' and request.get_json().get('page') == 'training':
@@ -928,6 +934,231 @@ def rollback_transaction():
         return jsonify({'success': True})
     except:
         return jsonify({'success': False}), 500
+
+
+@app.route('/analyze_move', methods=['POST'])
+def analyze_move():
+    """Analyze the last move with LLM"""
+    if not GEMINI_AVAILABLE:
+        return jsonify({'error': 'LLM features not available'}), 503
+    
+    try:
+        # Get current game and move data
+        print("Getting player...")
+        player = get_player()
+        print(f"Player: {player}")
+        
+        print("Getting game...")
+        game = get_game(player)
+        print(f"Game: {game}")
+        print(f"Game moves count: {len(game.moves) if game.moves else 0}")
+        
+        if not game.moves:
+            print("ERROR: No moves in game")
+            return jsonify({'error': 'No moves to analyze'}), 400
+        
+        # Print all moves for debugging
+        print("All moves in game:")
+        for i, move in enumerate(game.moves):
+            print(f"  Move {i}: player_move={move.player_move}, location={move.location}, score={move.score}")
+        
+        # Find the last human move (before AI response)
+        print("Looking for last human move...")
+        last_human_move = None
+        for move in reversed(game.moves):
+            if move.player_move:  # This is a human move
+                last_human_move = move
+                print(f"Found last human move: location={move.location}, score={move.score}")
+                break
+        
+        if not last_human_move:
+            print("ERROR: No human move found")
+            return jsonify({'error': 'No human move to analyze'}), 400
+        
+        # Create board state BEFORE the AI moved (after human's move)
+        print("Creating board state...")
+        moves_before_ai = [move for move in game.moves if move.id <= last_human_move.id]
+        print(f"  Including {len(moves_before_ai)} moves (up to and including human's move)")
+        
+        # Convert to text with explicit position mapping
+        print("Converting board to text...")
+        board_text = convert_moves_to_board_text(moves_before_ai, current_move=last_human_move)
+        # print("=" * 80)
+        # print("BOARD STATE BEING SENT TO LLM:")
+        # print("=" * 80)
+        # print(board_text)
+        # print("=" * 80)
+        
+        # Generate LLM analysis
+        print("Calling LLM analysis...")
+        llm_response = analyze_move_with_gemini(board_text, last_human_move, game)
+        print(f"LLM response length: {len(llm_response) if llm_response else 0}")
+        
+        return jsonify({
+            'analysis': llm_response,
+            'score': last_human_move.score,
+            'move_position': last_human_move.location
+        })
+    except Exception as e:
+        print(f"Error in analyze_move: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/chat_with_llm', methods=['POST'])
+def chat_with_llm():
+    """Chat with LLM about the current game"""
+    if not GEMINI_AVAILABLE:
+        return jsonify({'error': 'LLM features not available'}), 503
+    
+    try:
+        data = request.get_json()
+        user_message = data['message']
+        conversation_history = data.get('conversation', [])
+        
+        # Get current game context
+        player = get_player()
+        game = get_game(player)
+        board_text = convert_board_to_text(game)
+        
+        # print("=" * 80)
+        # print("BOARD STATE BEING SENT TO LLM (for chat):")
+        # print("=" * 80)
+        # print(board_text)
+        # print("=" * 80)
+        
+        # Generate response with context
+        llm_response = chat_with_gemini(board_text, user_message, conversation_history)
+        
+        return jsonify({'response': llm_response})
+    except Exception as e:
+        print(f"Error in chat_with_llm: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+def convert_board_to_text(game, current_move=None):
+    """Convert game board to text representation with explicit position mapping"""
+    return convert_moves_to_board_text(game.moves, current_move=current_move)
+
+
+def convert_moves_to_board_text(moves, current_move=None):
+    """Convert a list of moves to board text representation with explicit position mapping"""
+    board = [['.' for _ in range(8)] for _ in range(8)]
+    occupied_positions = []
+    
+    for move in moves:
+        row = move.location // 8
+        col = move.location % 8
+        col_letter = chr(ord('A') + col)
+        position = f"{col_letter}{row + 1}"
+        
+        if move.player_move:
+            board[row][col] = 'B'  # Black (human)
+            color = 'Black (Human)'
+        else:
+            board[row][col] = 'W'  # White (AI)
+            color = 'White (AI)'
+        
+        # Mark current move if specified
+        if current_move and move.id == current_move.id:
+            occupied_positions.append(f"  {position} = {color} ← This is the move being analyzed")
+        else:
+            occupied_positions.append(f"  {position} = {color}")
+    
+    # Build result with explicit position mapping
+    result = []
+    result.append("Board State (8x8 grid):")
+    result.append("")
+    
+    if occupied_positions:
+        result.append("Occupied Positions:")
+        result.extend(occupied_positions)
+        result.append("")
+    
+    result.append("Visual Grid (for reference):")
+    result.append("   A B C D E F G H")  # Column headers
+    for i, row in enumerate(board):
+        result.append(f"{i+1}  {' '.join(row)}")  # Row number + board row
+    
+    return '\n'.join(result)
+
+
+def analyze_move_with_gemini(board_text, move, game):
+    """Analyze move with Gemini"""
+    api_key = os.getenv('GEMINI_API_KEY')
+    client = genai.Client(api_key=api_key)
+    
+    # Convert position to chess-like notation
+    row = move.location // 8
+    col = move.location % 8
+    position_notation = f"{chr(ord('A') + col)}{row + 1}"
+    
+    prompt = f"""
+    You are a Gomoku expert tutor. Analyze this human player's move and explain why it received its specific score. Note that the board is 8x8, which is much smaller than a traditional board. Please keep this in mind when analyzing the move.
+    
+    CRITICAL: Use the "Occupied Positions" list to verify exact positions. This list provides explicit coordinates (e.g., "D3 = White") with no ambiguity. Do NOT rely solely on the visual grid - always cross-reference with the explicit position list to avoid errors.
+    
+    {board_text}
+    
+    Move Details:
+    - Position: {position_notation} (row {row + 1}, column {chr(ord('A') + col)})
+    - Player: Black (Human)
+    - Move Number: {len([m for m in game.moves if m.player_move])}
+    - Score: {move.score}/1.0
+    
+    Please provide a concise analysis focusing on:
+    1. **Why this move received a score of {move.score}/1.0** - explain the specific reasoning behind this numerical rating
+    2. **Strategic assessment** - what this move accomplishes or fails to accomplish
+    3. **Tactical patterns** - any threats, opportunities, or defensive moves involved.
+    
+    Be specific about the scoring rationale and educational for someone learning Gomoku strategy.
+    Keep your response concise and to the point.
+    When referring to positions, use the exact notation from the "Occupied Positions" list (e.g., "D3", "E4") and verify the color of stones using that list.
+    """
+    
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt,
+        config=types.GenerateContentConfig(
+            thinking_config=types.ThinkingConfig(thinking_budget=0)  # Disables thinking
+        ),
+    )
+    return response.text
+
+
+def chat_with_gemini(board_text, user_message, conversation_history):
+    """Chat with Gemini about the current game"""
+    api_key = os.getenv('GEMINI_API_KEY')
+    client = genai.Client(api_key=api_key)
+    
+    # Build conversation context
+    conversation_text = "\n".join([
+        f"User: {msg['user']}\nAssistant: {msg['assistant']}"
+        for msg in conversation_history
+    ])
+    
+    prompt = f"""
+    You are a Gomoku expert tutor having a conversation about a specific move. Note that the board is 8x8, which is much smaller than a traditional board. Please keep this in mind when analyzing the move.
+    
+    Current Board State (A-H columns, 1-8 rows, B=Black, W=White, .=Empty):
+    {board_text}
+    
+    Previous Conversation:
+    {conversation_text}
+    
+    Current User Question: {user_message}
+    
+    Respond naturally and helpfully, maintaining context of the specific move being discussed. Use the A-H, 1-8 coordinate system when referring to positions.
+    Keep your response concise and to the point.
+    """
+    
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt,
+        config=types.GenerateContentConfig(
+            thinking_config=types.ThinkingConfig(thinking_budget=0)  # Disables thinking
+        ),
+    )
+    return response.text
 
 
 @app.route('/<path:path>')
