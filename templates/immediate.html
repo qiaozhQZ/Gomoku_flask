@@ -16,6 +16,7 @@
 	<div class='comment_div'>A measure (ranging from 0-1) of how optimal your last move was
 		(1=best).</div>
 	<button id="hint_button">Please give me a hint</button>
+	<button id="explain-move-btn">Explain This Move</button>
 </div>
 
 <div id="winning_dialog">
@@ -29,8 +30,17 @@
 <div class="board-container">
     {% include 'loading.html' %}  <!-- Include the loading component here -->
     <table class="board">
+        <!-- Column headers -->
+        <tr>
+            <td class="corner"></td>
+            {%for j in range(0, size)%}
+                <td class="column-header">{{chr(ord('A') + j)}}</td>
+            {%endfor%}
+        </tr>
         {%for i in range(0, size)%}
         <tr>
+            <!-- Row header -->
+            <td class="row-header">{{i + 1}}</td>
             {%for j in range(0, size)%}
                 <td>
                     {% if i * size + j in moves and moves[i * size + j] == "black" %}
@@ -47,6 +57,26 @@
     </table>
 </div>
 
+<!-- LLM Analysis Sidebar -->
+<div id="analysis-sidebar" class="sidebar hidden">
+    <div class="sidebar-header">
+        <h3>Move Analysis</h3>
+        <button id="close-sidebar">×</button>
+    </div>
+    <div class="sidebar-content">
+        <div id="move-context">
+            <p>Move Score: <span id="current-score">0.0</span></p>
+        </div>
+        <div id="chat-container">
+            <div id="chat-messages"></div>
+            <div id="chat-input">
+                <input type="text" id="user-input" placeholder="Ask about this move...">
+                <button id="send-message">Send</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block footer %}
@@ -55,4 +85,5 @@
 </script>
 <script src="game.js"></script>
 <script src="training.js"></script>
+<script src="llm_analysis.js"></script>
 {% endblock %}

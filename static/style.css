@@ -36,6 +36,36 @@
 	vertical-align: middle;
 }
 
+/* Row and column headers */
+.column-header, .row-header {
+	background-color: #f8f9fa;
+	font-weight: bold;
+	font-size: 14px;
+	text-align: center;
+	vertical-align: middle;
+	padding: 0;
+	border: 2px solid #000000;
+	width: 70px;
+	height: 70px;
+}
+
+.column-header {
+	background-color: #e9ecef;
+	font-size: 16px;
+}
+
+.row-header {
+	background-color: #e9ecef;
+	font-size: 16px;
+}
+
+.corner {
+	background-color: #dee2e6;
+	border: 2px solid #000000;
+	width: 70px;
+	height: 70px;
+}
+
 .blackstone {
 	background-image: url(black70.png);
 }
@@ -164,4 +194,235 @@
 
 #next_button{
 	text-align: center;
+}
+
+/* LLM Analysis Sidebar Styling */
+.sidebar {
+	position: fixed;
+	right: -400px;
+	top: 0;
+	width: 400px;
+	height: 100vh;
+	background: white;
+	border-left: 2px solid #ddd;
+	transition: right 0.3s ease;
+	z-index: 1000;
+	overflow-y: auto;
+	padding: 20px;
+	box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+	visibility: hidden;
+}
+
+.sidebar.open { 
+	right: 0; 
+	visibility: visible;
+}
+
+.sidebar.hidden { 
+	right: -400px; 
+	visibility: hidden;
+}
+
+.sidebar-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 20px;
+	padding-bottom: 10px;
+	border-bottom: 1px solid #ddd;
+}
+
+.sidebar-header h3 {
+	margin: 0;
+	color: #333;
+}
+
+#close-sidebar {
+	background: #f44336;
+	color: white;
+	border: none;
+	border-radius: 50%;
+	width: 30px;
+	height: 30px;
+	cursor: pointer;
+	font-size: 18px;
+	line-height: 1;
+}
+
+#close-sidebar:hover {
+	background: #d32f2f;
+}
+
+#move-context {
+	background: #f8f9fa;
+	padding: 15px;
+	border-radius: 5px;
+	margin-bottom: 20px;
+	border: 1px solid #dee2e6;
+}
+
+#move-context p {
+	margin: 5px 0;
+	font-weight: bold;
+}
+
+#current-score {
+	color: #007bff;
+	font-size: 1.2em;
+}
+
+#chat-container {
+	height: calc(100vh - 200px);
+	display: flex;
+	flex-direction: column;
+}
+
+#chat-messages {
+	flex: 1;
+	overflow-y: auto;
+	border: 1px solid #ddd;
+	padding: 15px;
+	margin-bottom: 15px;
+	border-radius: 5px;
+	background: #fafafa;
+}
+
+.chat-message {
+	margin: 10px 0;
+	padding: 12px;
+	border-radius: 8px;
+	max-width: 85%;
+	word-wrap: break-word;
+}
+
+.user-message {
+	background: #e3f2fd;
+	text-align: right;
+	margin-left: auto;
+	border-bottom-right-radius: 4px;
+}
+
+.llm-message {
+	background: #f5f5f5;
+	text-align: left;
+	margin-right: auto;
+	border-bottom-left-radius: 4px;
+	border: 1px solid #e0e0e0;
+}
+
+/* Formatting for LLM responses */
+.chat-message strong {
+	font-weight: bold;
+	color: #333;
+}
+
+.chat-message em {
+	font-style: italic;
+	color: #555;
+}
+
+.chat-message h1, .chat-message h2, .chat-message h3,
+.chat-message h4, .chat-message h5, .chat-message h6 {
+	margin: 15px 0 10px 0;
+	font-weight: bold;
+	color: #333;
+}
+
+.chat-message h1 {
+	font-size: 1.5em;
+	border-bottom: 2px solid #ddd;
+	padding-bottom: 5px;
+}
+
+.chat-message h2 {
+	font-size: 1.3em;
+	border-bottom: 1px solid #ddd;
+	padding-bottom: 3px;
+}
+
+.chat-message h3 {
+	font-size: 1.1em;
+}
+
+.chat-message h4 {
+	font-size: 1em;
+}
+
+.chat-message h5 {
+	font-size: 0.9em;
+}
+
+.chat-message h6 {
+	font-size: 0.85em;
+	color: #666;
+}
+
+.chat-message ol, .chat-message ul {
+	margin: 10px 0;
+	padding-left: 20px;
+}
+
+.chat-message li {
+	margin: 5px 0;
+}
+
+.chat-message ol li {
+	list-style-type: decimal;
+}
+
+.chat-message ul li {
+	list-style-type: disc;
+}
+
+#chat-input {
+	display: flex;
+	gap: 10px;
+}
+
+#user-input {
+	flex: 1;
+	padding: 10px;
+	border: 1px solid #ddd;
+	border-radius: 5px;
+	font-size: 14px;
+}
+
+#user-input:focus {
+	outline: none;
+	border-color: #007bff;
+	box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+}
+
+#send-message {
+	background: #007bff;
+	color: white;
+	border: none;
+	padding: 10px 20px;
+	border-radius: 5px;
+	cursor: pointer;
+	font-size: 14px;
+}
+
+#send-message:hover {
+	background: #0056b3;
+}
+
+#explain-move-btn {
+	background: #28a745;
+	color: white;
+	border: none;
+	padding: 8px 16px;
+	border-radius: 5px;
+	cursor: pointer;
+	font-size: 14px;
+	margin-left: 10px;
+}
+
+#explain-move-btn:hover {
+	background: #218838;
+}
+
+#explain-move-btn:disabled {
+	background: #6c757d;
+	cursor: not-allowed;
 }
